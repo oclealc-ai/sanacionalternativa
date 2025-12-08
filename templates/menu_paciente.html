@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú del Paciente</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        .menu-container {
+            max-width: 450px;
+            margin: auto;
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 18px;
+            font-size: 1.2em;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .menu-btn:hover {
+            background: #1e7e34;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            color: #28a745;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container menu-container">
+    <h2>Bienvenido {{ nombre }}</h2>
+
+    <button class="menu-btn" onclick="window.location.href='/paciente/menu_citas'">
+        📅 Agendar una cita
+    </button>
+
+    <button class="menu-btn" onclick="window.location.href='/paciente/mis_citas'">
+        📘 Ver mis citas agendadas
+    </button>
+
+    <button class="menu-btn" style="background:#dc3545" onclick="window.location.href='/logout/paciente'">
+        🔒 Cerrar Sesión
+    </button>
+</div>
+
+</body>
+</html>

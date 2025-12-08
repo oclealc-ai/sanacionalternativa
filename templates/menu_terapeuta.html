@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú del Terapeuta</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <style>
+        body {
+            margin: 0;
+            background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .menu-container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.20);
+            width: 90%;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 18px;
+            font-size: 1.2em;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .menu-btn:hover {
+            background: #0056b3;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container menu-container">
+        <h2>Menú del Terapeuta</h2>
+
+        <!-- Botón para crear citas -->
+        <button class="menu-btn" onclick="window.location.href='/admin/generar_citas'">
+            📅 Generar Citas
+        </button>
+
+        <!--Botón para ver el calendario de citas -->
+        <button class="menu-btn" onclick="window.location.href='/admin/ver_citas'">
+            📘 Ver Calendario de Citas
+        </button>
+
+        <!-- Botón para Bloquear o Cerrar citas -->
+        <button class="menu-btn" onclick="window.location.href='/admin/bloquear_citas'">
+            🛑 Bloquear Citas
+        </button>
+
+        <!-- Botón para administrar frases -->
+        <button class="menu-btn" onclick="window.location.href='/frases'">
+            📝 Administrar Frases
+        </button>
+        
+        <!-- Cerrar sesión -->
+        <button class="menu-btn" style="background:#dc3545" onclick="window.location.href='/logout/sistema'">
+            🔒 Cerrar Sesión
+        </button>
+    </div>
+
+</body>
+</html>

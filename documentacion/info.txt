@@ -1,0 +1,42 @@
+Conectar MySQL, levantar la BD (asumo que ya esta levantada, solo entro para ver la BD)
+entrar a Visual Studio code
+ngrok para publicar la IP temporal
+Windows PowerShell para correr la aplicacion desde ahi
+https://developers.facebook.com/apps  (para generar el token temporal)
+
+
+Crear la BD
+	Instalar MySQL y MySQLWorkbench
+
+Instalar ngrok para hacer la IP publica temporal
+
+ngrok http 5000
+
+
+
+🧩 LOS 3 COMPONENTES QUE NECESITAS
+Componente	Dónde corre	Qué hace
+🧠 Base de datos MySQL	Tu PC (local)	Guarda los datos de los pacientes
+⚙️ API Flask (api_sanalter.py)	Tu PC (local)	Recibe los datos de la app y los guarda en la BD
+📱 App Kivy (paciente_app_kivy.py)	Tu celular	Pantalla para capturar los datos y enviarlos a la API
+
+
+🔹 Diagrama de cómo funciona tu app con Flask y la base de datos
+[ App Kivy en Android ] 
+           |
+           | (envía datos JSON por HTTP POST)
+           v
+        [ Flask API ]  <-- tu servidor en Python
+           |
+           | (recibe JSON y lo procesa)
+           v
+     [ Base de datos MySQL ]  <-- donde se guardan los pacientes
+
+
+La app Kivy es el cliente.
+
+Flask es el servidor / intermediario.
+
+MySQL es el almacén de datos.
+
+

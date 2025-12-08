@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Usuario</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Agregar Usuario</h1>
+
+    <form action="/admin/usuarios/guardar" method="POST">
+
+        <label>Usuario:</label>
+        <input type="text" name="Usuario" required>
+
+        <label>Contraseña:</label>
+        <input type="password" name="Password" required>
+
+        <label>Tipo de Usuario:</label>
+        <select name="TipoUsuario" required>
+            <option value="">Seleccione...</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="TERAPEUTA">TERAPEUTA</option>
+            <option value="ASISTENTE">ASISTENTE</option>
+        </select>
+
+        <br><br>
+        <button type="submit" class="btn">Guardar Usuario</button>
+        <button type="button" class="btn cancel" onclick="window.location.href='/admin/usuarios'">
+            Cancelar
+        </button>
+
+    </form>
+</div>
+
+</body>
+</html>
