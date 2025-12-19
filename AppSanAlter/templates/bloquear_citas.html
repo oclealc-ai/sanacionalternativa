@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloquear Citas</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
+    .container { max-width: 800px; margin: auto; padding: 20px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-radius: 8px; }
+    h1 { text-align: center; color: #333; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input[type="date"] { padding: 8px; width: 100%; max-width: 200px; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; font-size: 14px; }
+    th { background-color: #007BFF; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .actions { margin-top: 15px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+    .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    .btn-bloquear { background-color: #FF6B6B; color: #fff; }
+    .btn-bloquear:hover { background-color: #e55a5a; }
+    .mensaje { margin-top: 10px; color: #333; text-align: center; }
+    @media(max-width:600px){
+        th, td { font-size: 12px; padding: 6px; }
+        .actions { flex-direction: column; align-items: center; }
+        input[type="date"] { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bloquear Citas</h1>
+
+    <label for="fecha">Selecciona el día:</label>
+    <input type="date" id="fecha" onchange="cargarCitas()">
+
+    <div class="actions">
+        <label>
+            <input type="checkbox" id="bloquear_dia" onchange="marcarTodo()"> Bloquear todo el día
+        </label>
+        <button class="btn btn-bloquear" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
+    </div>
+
+    <div class="mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Estatus</th>
+                <th>Seleccionar</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpo-citas">
+            <tr><td colspan="4" style="text-align:center;">Selecciona una fecha para ver las citas</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+let citas = [];
+
+function cargarCitas() {
+    const fecha = document.getElementById('fecha').value;
+    const tbody = document.getElementById('cuerpo-citas');
+    const mensaje = document.getElementById('mensaje-tabla');
+
+    if (!fecha) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Selecciona una fecha para ver las citas</td></tr>';
+        mensaje.textContent = "Selecciona una fecha para ver las citas.";
+        return;
+    }
+
+    fetch(`/admin/lista_citas_bloquear?fecha=${fecha}`)
+        .then(res => res.json())
+        .then(data => {
+            citas = data;
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay citas para esta fecha</td></tr>';
+                mensaje.textContent = "No hay citas disponibles para este día.";
+                return;
+            }
+
+            mensaje.textContent = "";
+
+            tbody.innerHTML = '';
+            data.forEach(cita => {
+                const disabled = (cita.Estatus === 'Bloqueada' || cita.Estatus === 'Confirmada') ? 'disabled' : '';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${cita.HoraCita}</td>
+                        <td>${cita.Paciente || '-'}</td>
+                        <td>${cita.Estatus}</td>
+                        <td><input type="checkbox" class="check-cita" data-id="${cita.IdCita}" ${disabled}></td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Error al cargar las citas</td></tr>';
+            mensaje.textContent = "Error al cargar las citas. Intenta nuevamente.";
+        });
+}
+
+function marcarTodo() {
+    const check = document.getElementById('bloquear_dia').checked;
+    document.querySelectorAll('.check-cita').forEach(c => {
+        if (!c.disabled) c.checked = check;
+    });
+}
+
+function bloquearSeleccionadas() {
+    const seleccionadas = Array.from(document.querySelectorAll('.check-cita:checked')).map(c => c.dataset.id);
+    if (seleccionadas.length === 0) {
+        alert("Selecciona al menos una cita para bloquear.");
+        return;
+    }
+
+    fetch('/admin/bloquear_citas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: seleccionadas })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.mensaje || 'Citas bloqueadas.');
+        
+        // Desmarcar checkbox de "Bloquear todo el día"
+        document.getElementById('bloquear_dia').checked = false;
+
+        // Recargar tabla después de bloquear
+        cargarCitas();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error al bloquear las citas. Intenta nuevamente.");
+    });
+}
+</script>
+
+</body>
+</html>

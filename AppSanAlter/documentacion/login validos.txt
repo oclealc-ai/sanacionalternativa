@@ -1,0 +1,12 @@
+Este Login es el correcto para pedir el telefono, si lo encuentra, entra al menu de pacientes, si no lo encuenta, 
+entra a la pantalla de alta de pacientes.
+
+https://angla-cantonal-workably.ngrok-free.dev/login/paciente
+
+
+Este es para que entre un usuario admin o asistente, es el menu de opciones para nosotros
+
+https://angla-cantonal-workably.ngrok-free.dev
+https://angla-cantonal-workably.ngrok-free.dev/login
+
+https://angla-cantonal-workably.ngrok-free.dev/prueba

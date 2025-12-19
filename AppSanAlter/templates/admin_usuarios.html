@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - Administración</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background: #2b7bff;
+            color: white;
+        }
+        .accion-btn {
+            padding: 6px 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+        .editar {
+            background-color: #f0ad4e;
+        }
+        .editar:hover {
+            background-color: #d99028;
+        }
+        .eliminar {
+            background-color: #d9534f;
+        }
+        .eliminar:hover {
+            background-color: #b03c38;
+        }
+        .nuevo-btn {
+            margin-top: 20px;
+            padding: 12px 18px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .nuevo-btn:hover {
+            background-color: #449d44;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Usuarios</h1>
+        <p>Administración de usuarios del sistema.</p>
+
+        <button class="nuevo-btn" onclick="window.location.href='/admin/usuarios/nuevo'">
+            ➕ Agregar Usuario
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Tipo de Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.IdUsuario }}</td>
+                    <td>{{ u.Usuario }}</td>
+                    <td>{{ u.TipoUsuario }}</td>
+                    <td>
+                        <button class="accion-btn editar"
+                                onclick="window.location.href='/admin/usuarios/editar/{{ u.IdUsuario }}'">
+                            ✏️ Editar
+                        </button>
+
+                        <button class="accion-btn eliminar"
+                                onclick="confirmarEliminar('{{ u.IdUsuario }}')">
+                            🗑 Eliminar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <script>
+            function confirmarEliminar(id) {
+                if (confirm("¿Seguro que deseas eliminar este usuario?")) {
+                    window.location.href = "/admin/usuarios/eliminar/" + id;
+                }
+            }
+        </script>
+
+    </div>
+
+</body>
+</html>

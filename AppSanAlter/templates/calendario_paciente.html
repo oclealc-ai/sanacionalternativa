@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona tu Fecha</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <style>
+        body {
+            padding: 15px;
+            background: #f5f5f5;
+            font-family: Arial;
+        }
+
+        .top-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nombre {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+
+        .mensaje {
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        #calendar {
+            max-width: 95%;
+            margin: 0 auto;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<body style="margin:0; padding:0;">
+    <div class="top-container" style="margin-bottom:10px; padding-top:5px;">
+        <div class="nombre">Hola {{ session['NombrePaciente'] }}</div>
+        <div class="mensaje">Selecciona una fecha del calendario...</div>
+        <div id="calendar"></div>
+    </div>    
+</body>
+
+    
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    let calendarEl = document.getElementById("calendar");
+
+    let hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // ← importante para evitar bugs de hora
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "es",
+
+        validRange: {
+            start: hoy   // ⛔ bloquea fechas anteriores a hoy
+        },
+
+        dateClick: function(info) {
+            window.location.href = "/paciente/citas_disponibles?fecha=" + info.dateStr;
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+</body>
+</html>

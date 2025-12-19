@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar frase</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            justify-content: flex-start; /* ↑ mover contenedor arriba */
+            padding-top: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(100, 255, 255, 0.02); /* más transparente */
+            backdrop-filter: blur(15px); /* más blur */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            text-align: justify;
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 80px;
+            font-size: 4em;
+        }
+
+        label {
+            font-size: 3.2em;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 2.5em;
+            border-radius: 10px;
+            border: 10px solid #bbb;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 2.5em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+
+        .volver {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 4em;
+            text-decoration: none;
+            color: #555;
+        }
+
+        .volver:hover {
+            text-decoration: underline;
+        }
+
+        /* 📱 Mejor lectura en celular */
+        @media (max-width: 600px) {
+            textarea, button, label {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class=".container">
+
+    <h2>✏ Editar frase</h2>
+
+    <form method="POST" action="/frases/actualizar">
+
+        <!-- Guardamos la fecha original -->
+        <input type="hidden" name="idFrase" value="{{ registro.idFrase }}">
+
+        <label for="frase">Frase:</label>
+        <textarea id="frase" name="frase" rows="15" required>{{ registro.frase }}</textarea>
+
+        <button type="submit">Guardar cambios</button>
+    </form>
+
+    <a href="/frases" class="volver">⬅ Volver</a>
+
+</div>
+
+</body>
+</html>
