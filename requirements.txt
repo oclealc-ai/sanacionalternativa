@@ -1,6 +1,0 @@
-flask
-werkzeug
-gunicorn
-mysql-connector-python
-python-dotenv
-requests
