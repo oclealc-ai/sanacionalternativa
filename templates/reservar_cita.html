@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tipo == 'reagendar' ? 'Re-agendar Cita' : 'Confirmar Reserva' }}</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        body { text-align: center; padding: 20px; font-family: Arial, sans-serif; background: #f5f5f5; }
+        .card {
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h2 { margin-bottom: 20px; }
+        p { font-size: 16px; margin: 10px 0; }
+        button {
+            padding: 12px 20px;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .confirm { background: #28a745; }
+        .confirm:hover { background-color: #218838; }
+        .cancel { background: #dc3545; }
+        .cancel:hover { background: #b52a39; }
+    </style>
+</head>
+<body>
+
+<div class="card" role="form" aria-labelledby="reserva-title">
+    <h2 id="reserva-title">{{ tipo == 'reagendar' ? 'Re-agendar Cita' : 'Reservar Cita' }}</h2>
+    <p>Fecha: <strong>{{ cita.FechaCita }}</strong></p>
+    <p>Hora: <strong>{{ cita.HoraCita }}</strong></p>
+
+    <form id="reservaForm" action="/paciente/reservar_cita" method="POST">
+        <input type="hidden" name="idCita" value="{{ id_cita }}">
+        <input type="hidden" name="idPaciente" value="{{ id_paciente }}">
+        <input type="hidden" name="tipo" value="{{ tipo }}">
+
+        <button type="submit" class="confirm" onclick="return confirmarReserva()">
+            {{ tipo == 'reagendar' ? 'Confirmar Re-agenda' : 'Confirmar Reserva' }}
+        </button>
+    </form>
+
+    <button class="cancel" onclick="cancelar()" aria-label="Cancelar reserva">Cancelar</button>
+</div>
+
+<script>
+    // Confirmación antes de enviar y redirige a Mis Citas
+    function confirmarReserva() {
+        const confirmar = confirm("¿Está seguro de que desea confirmar esta reserva?");
+        if(confirmar) {
+            // Después de confirmar, vuelve siempre a Mis Citas
+            setTimeout(() => {
+                window.location.href = '/paciente/mis_citas';
+            }, 100);
+        }
+        return confirmar;
+    }
+
+    // Cancelar: vuelve a Mis Citas
+    function cancelar() {
+        window.location.href = '/paciente/mis_citas';
+    }
+</script>
+
+</body>
+</html>

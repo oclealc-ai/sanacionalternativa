@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Paciente</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        body {
+            margin: 0;
+            background: url('/static/img/fondo03.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.20);
+            width: 90%;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Ingreso de Paciente</h2>
+
+    <label for="telefono">📱 Ingresa tu número de WhatsApp:</label>
+    <input type="tel" id="telefono" placeholder="Ejemplo: 8112345678" required>
+        
+    <button onclick="enviarCodigo()">Enviar el código</button>
+    
+    <div id="cajaCodigo" style="display:none; margin-top:20px;">
+        <h3>Validar Código</h3>
+        
+        <input type="text" id="codigo"
+               maxlength="6"
+               placeholder="Código recibido"
+               inputmode="numeric">
+
+        <button onclick="validarCodigo()">Validar</button>
+    </div>
+
+    <div id="mensaje" class="error-message" style="display:none;"></div>
+
+</div>
+
+<script>
+function enviarCodigo() {
+    let telefono = document.getElementById("telefono").value.trim();
+    
+    if (telefono.length < 10) {
+        mostrar("Número es inválido");
+        return;
+    }
+
+    fetch("/enviar_codigo", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({telefono, modo: "login"})
+    })
+    .then(r => r.json())
+    .then(data => {
+
+        if (data.status === "ok") {
+            document.getElementById("cajaCodigo").style.display = "block";
+            mostrar("Código enviado por SMS. Revisa tu teléfono.", false);
+            
+            // Guardamos temporalmente el número
+            sessionStorage.setItem("telefono_login", telefono);
+        }
+        else if (data.status === "no_encontrado") {
+            // 🔥 Si el teléfono NO existe, vamos al alta de paciente
+            window.location.href = "/paciente/alta?telefono=" + telefono;
+        }
+        else {
+            mostrar("Error enviando código.");
+        }
+    });
+}
+
+function validarCodigo() {
+    let codigo = document.getElementById("codigo").value.trim();
+    let telefono = sessionStorage.getItem("telefono_login");
+
+    if (!codigo || codigo.length !== 6) {
+        mostrar("Código inválido");
+        return;
+    }
+
+    fetch("/paciente/validar_codigo", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({telefono, codigo})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            window.location.href = "/paciente/menu";  // ⬅️ ENTRAR AL MENÚ
+        } else {
+            mostrar("Código incorrecto o expirado.");
+        }
+    });
+}
+
+function mostrar(msg, error = true){
+    let div = document.getElementById("mensaje");
+    div.style.display = "block";
+    div.textContent = msg;
+
+    div.className = error ? "error-message" : "success-message";
+}
+
+</script>
+
+</body>
+</html>

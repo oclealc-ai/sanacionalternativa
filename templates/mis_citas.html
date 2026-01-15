@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Citas</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        body {
+            display: block !important;
+        }
+
+        .contenedor-citas {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .btn-volver {
+            display: block;
+            width: 90%;
+            padding: 14px;
+            margin: 0 auto 20px;
+            background: #6c757d;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            text-decoration: none;
+        }
+
+        /* ---------- TARJETAS ---------- */
+
+        .card-cita {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+            font-size: 0.95em;
+        }
+
+        /* Colores por estatus */
+        .card-Reservada {
+            background: #fff8e1;           /* amarillo suave */
+            border-left: 6px solid #ffc107;
+        }
+
+        .card-Confirmada {
+            background: #e3f2fd;           /* azul suave */
+            border-left: 6px solid #007bff;
+        }
+
+        .card-Cancelada {
+            background: #fdecea;           /* rojo suave */
+            border-left: 6px solid #dc3545;
+        }
+
+        .card-Realizada {
+            background: #f4f6f8;           /* gris suave */
+            border-left: 6px solid #6c757d;
+        }
+
+
+        .fila-top {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .linea {
+            margin-bottom: 6px;
+        }
+
+        /* ---------- ESTATUS ---------- */
+
+        .estatus-click {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .Disponible { color: #28a745; }
+        .Reservada { color: #ffc107; }
+        .Confirmada { color: #007bff; }
+        .Cancelada { color: #dc3545; }
+        .Realizada { color: #6c757d; }
+
+        /* ---------- MENÚ ---------- */
+
+        .menu-opciones {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 99999;
+            min-width: 220px;
+        }
+
+        .menu-opciones button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .menu-confirmar { background: #007bff; color:white; }
+        .menu-cancelar { background: #dc3545; color:white; }
+        .menu-reagendar { background: #ffc107; color:black; }
+
+    </style>
+</head>
+
+<body>
+
+<div class="contenedor-citas">
+
+    <h2>Mis Citas</h2>
+
+    <div class="subtitulo">
+        {{ session['NombrePaciente'] }}
+    </div>
+
+    <a class="btn-volver" href="/paciente/menu">← Volver al menú</a>
+
+    {% if citas %}
+
+        {% for c in citas %}
+
+        {% set hora_fmt = "%02d:%02d"|format(
+            (c.HoraCita.total_seconds() // 3600)|int,
+            ((c.HoraCita.total_seconds() % 3600) // 60)|int
+        ) %}
+
+        <div class="card-cita card-{{ c.Estatus }}">
+
+
+            <div class="fila-top">
+                <span>📅 {{ c.FechaCita }}</span>
+                <span>⏰ {{ hora_fmt }}</span>
+            </div>
+
+            <div class="linea">
+                👩‍⚕️ <b>Terapeuta:</b> {{ c.NombreTerapeuta }}
+            </div>
+
+            {% if c.Para %}
+                <div class="linea">
+                    👤 <b>Para:</b> {{ c.Para }}
+                </div>
+            {% endif %}
+
+            <div class="linea">
+                <b>Estatus:</b>
+
+                {% if c.Estatus == "Reservada" %}
+                <span class="estatus-click {{ c.Estatus }}"
+                      data-id="{{ c.idCita }}"
+                      data-estatus="{{ c.Estatus }}"
+                      data-fecha="{{ c.FechaCita }}"
+                      data-hora="{{ hora_fmt }}"
+                      onclick="mostrarMenu(this)">
+                    {{ c.Estatus }}
+                </span>
+                {% else %}
+                <span class="{{ c.Estatus }}">
+                    {{ c.Estatus }}
+                </span>
+                {% endif %}
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+        <p style="text-align:center; font-size:1.2em;">
+            No tienes citas agendadas.
+        </p>
+    {% endif %}
+
+    <div id="menuOpciones" class="menu-opciones"></div>
+
+</div>
+
+<script>
+let menu = document.getElementById("menuOpciones");
+
+function mostrarMenu(el) {
+
+    const idCita  = el.dataset.id;
+    const estatus = el.dataset.estatus;
+    const fecha   = el.dataset.fecha;
+    const hora    = el.dataset.hora;
+
+    menu.innerHTML = `
+        <div style="text-align:center; font-size:0.9em; margin-bottom:10px;">
+            <b>Cita seleccionada:</b><br>
+            ${fecha} a las ${hora}
+        </div>
+    `;
+
+    if (estatus === "Reservada") {
+        menu.innerHTML += `
+            <button class="menu-confirmar"
+                onclick="accion('confirmar', ${idCita}, event)">
+                ✔ Confirmar
+            </button>
+        `;
+    }
+
+    if (estatus === "Reservada" || estatus === "Confirmada") {
+        menu.innerHTML += `
+            <button class="menu-reagendar"
+                onclick="accion('reagendar', ${idCita}, event)">
+                🔁 Re-agendar
+            </button>
+
+            <button class="menu-cancelar"
+                onclick="accion('cancelar', ${idCita}, event)">
+                ✖ Cancelar
+            </button>
+        `;
+    }
+
+    const rect = el.getBoundingClientRect();
+    menu.style.display = "block";
+    menu.style.top = (rect.bottom + window.scrollY + 8) + "px";
+    menu.style.left = (window.innerWidth / 2 - menu.offsetWidth / 2) + "px";
+}
+
+function accion(tipo, idCita, event) {
+    event.stopPropagation();
+    window.location.replace(`/paciente/${tipo}?idCita=${idCita}`);
+}
+
+document.addEventListener("click", function(e) {
+    if (!menu.contains(e.target) && !e.target.classList.contains("estatus-click")) {
+        menu.style.display = "none";
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Alta de Paciente</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    
+</head>
+
+<body>
+    <div class='container'>
+        <h2>Alta de Paciente</h2>
+
+        <form id='formulario' method='post'>
+            <input type='text' name='NombrePaciente' placeholder='Nombre' required>
+            <input type='date' name='fechanac' required>
+            <input type='email' name='correo' placeholder='Correo' required>
+            <input type='tel' id='telefono' name='telefono' placeholder='Teléfono (10 dígitos)' value="{{ telefono }}" {% if telefono %}readonly{% endif %} required maxlength='10'>
+            
+            <button type='button' id='btnCodigo' onclick='enviarCodigo()'>Enviar código Verificador</button>
+            <div id='timer' style='font-weight:bold; margin-top:5px;'></div>
+
+            <input type="text" 
+                   id="codigo" 
+                   name="codigo" 
+                   pattern="\d{6}" 
+                   maxlength="6" 
+                   inputmode="numeric" 
+                   required 
+                   placeholder="Código de 6 dígitos">
+                   
+            <button type='submit'>Guardar paciente</button>
+        </form>
+
+        <div id='alert'></div>
+    </div>
+
+    <script>
+        let contador = 0;
+
+        function iniciarTemporizador() {
+            contador = 60;
+            let timerDiv = document.getElementById('timer');
+            let btn = document.getElementById('btnCodigo');
+
+            btn.classList.add("disabled");
+            btn.disabled = true;
+
+            let interval = setInterval(() => {
+                timerDiv.innerHTML = "Reenviar código en " + contador + "s";
+                contador--;
+
+                if (contador < 0) {
+                    clearInterval(interval);
+                    timerDiv.innerHTML = "";
+                    btn.classList.remove("disabled");
+                    btn.disabled = false;
+                    btn.innerHTML = "Reenviar código";
+                }
+            }, 1000);
+        }
+
+        function enviarCodigo() {
+            let tel = document.getElementById("telefono").value;
+
+            if (!/^[0-9]{10}$/.test(tel)) {
+                mostrarAlerta("Número inválido. Debe tener 10 dígitos.", "error");
+                return;
+            }
+
+            document.getElementById("btnCodigo").innerHTML = "Enviando...";
+
+            fetch("/enviar_codigo", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({telefono: tel, modo: "alta"})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    mostrarAlerta("Código verificador enviado ✔ : " + data.status, "success");
+                    iniciarTemporizador();
+                } else {
+                    mostrarAlerta("Error enviando código ❌", "error");
+                    document.getElementById("btnCodigo").innerHTML = "Enviar código Verificador";
+                }
+            });
+        }
+
+        function mostrarAlerta(msg, tipo) {
+            let a = document.getElementById("alert");
+            a.textContent = msg;
+            a.className = tipo;
+            a.style.display = "block";
+            setTimeout(() => a.style.display = "none", 4000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citas Disponibles</title>
+
+<link rel="stylesheet" href="/static/css/sanacion.css">
+
+<style>
+    body { margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: Arial; }
+    .top-message { text-align: center; padding: 15px; background: #f5f5f5; font-size: 1.3em; font-weight: bold; color: #28a745; }
+    .content { flex: 0; display: flex; flex-direction: column; padding: 10px 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 6px 10px; border-bottom: 1px solid #ddd; line-height: 1.2; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    td button { padding: 6px 10px; font-size: 0.9em; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    td button:hover { background: #1e7e34; }
+    .no-citas { text-align: center; font-size: 1.2em; color: #333; margin-top: 20px; flex: 0; display: flex; justify-content: center; align-items: center; }
+    .btn-volver { display: block; width: 95%; margin: 10px auto; padding: 12px; background: #6c757d; color: white; border-radius: 6px; text-align: center; font-size: 1.1em; text-decoration: none; }
+    .btn-volver:hover { background: #5a6268; }
+</style>
+</head>
+<body>
+
+<div class="top-message">
+    Citas disponibles para <br> 
+    <span style="display:block; color:#007bff; font-size:1.2em;">{{ fecha }}</span>
+</div>
+
+<a class="btn-volver" href="/paciente/mis_citas">← Volver a Mis Citas</a>
+
+<form method="GET" action="" style="margin-bottom:15px; text-align:center; font-size:1.1em;">
+    <input type="hidden" name="fecha" value="{{ fecha }}">
+
+    <label for="terapeuta" style="font-weight:bold; margin-right:10px;">
+        Filtrar por terapeuta:
+    </label>
+
+    <select name="terapeuta" id="terapeuta" onchange="this.form.submit()"
+            style="padding:8px 12px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; min-width:220px;">
+        <option value="">-- Todos --</option>
+
+        {% for t in terapeutas %}
+            <option value="{{ t.Usuario }}"
+                {% if terapeuta_sel == t.Usuario %}selected{% endif %}>
+                {{ t.NombreUsuario }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<div class="content">
+    {% if citas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Hora</th>
+                <th>Terapeuta</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in citas %}
+            <tr>
+                <td>{{ c.HoraCita }}</td>
+                <td>{{ c.Terapeuta }}</td>
+                <td>
+                    <form action="/paciente/reservar_cita" method="POST" style="margin:0;">
+                        <input type="hidden" name="idCita" value="{{ c.idCita }}">
+                        <input type="hidden" name="idPaciente" value="{{ idPaciente }}">
+                        <input type="hidden" name="tipo" value="{{ tipo }}"> <!-- agendar o reagendar -->
+                        <input type="hidden" name="fechaNueva" value="{{ fecha }}">
+                        <input type="hidden" name="horaNueva" value="{{ c.HoraCita }}">
+                        
+                        <button type="button" onclick="abrirModal(this)">Reservar</button>
+
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-citas">
+        No hay citas disponibles este día.
+    </div>
+    {% endif %}
+</div>
+
+<div id="modalPara" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;">
+
+    <div style="
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        width:90%;
+        max-width:400px;
+        text-align:center;">
+        
+        <h3>¿Quién tomará la cita?</h3>
+
+        <div style="margin:15px 0; text-align:left;">
+            <label>
+                <input type="radio" name="paraOpc" value="mismo" checked>
+                Yo mismo
+            </label><br>
+            <label>
+                <input type="radio" name="paraOpc" value="otro">
+                Otra persona
+            </label>
+        </div>
+
+        <input type="text" id="nombrePara"
+               placeholder="Nombre completo"
+               style="width:100%; padding:10px; margin:15px 0; display:none;">
+
+        <div style="display:flex; gap:10px;">
+            <button onclick="confirmarReserva()"
+                    style="flex:1; padding:10px; background:#28a745; color:white; border:none; border-radius:6px;">
+                Confirmar
+            </button>
+
+            <button onclick="cerrarModal()"
+                    style="flex:1; padding:10px; background:#dc3545; color:white; border:none; border-radius:6px;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let formActual = null;
+
+function abrirModal(boton) {
+    formActual = boton.closest("form");
+    document.getElementById("modalPara").style.display = "flex";
+    document.getElementById("nombrePara").style.display = "none";
+
+    // Radio por defecto: Yo mismo
+    document.querySelector('input[name="paraOpc"][value="mismo"]').checked = true;
+}
+
+// Mostrar input si selecciona "Otra persona"
+document.querySelectorAll('input[name="paraOpc"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        document.getElementById("nombrePara").style.display =
+            radio.value === "otro" ? "block" : "none";
+    });
+});
+
+function cerrarModal() {
+    document.getElementById("modalPara").style.display = "none";
+    formActual = null;
+}
+
+function confirmarReserva() {
+    const opcion = document.querySelector('input[name="paraOpc"]:checked').value;
+    let nombre = "";
+
+    if (opcion === "mismo") {
+        nombre = "{{ session['NombrePaciente'] }}";  // se toma del paciente logueado
+    } else {
+        nombre = document.getElementById("nombrePara").value.trim();
+        if (nombre === "") {
+            alert("Por favor ingresa el nombre de la persona.");
+            return;
+        }
+    }
+
+    // Crear input hidden Para
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "Para";
+    input.value = nombre;
+
+    formActual.appendChild(input);
+    formActual.submit();
+}
+</script>
+
+
+
+</body>
+</html>

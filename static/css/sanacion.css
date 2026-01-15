@@ -1,0 +1,144 @@
+/* -------------------------------------------
+   ESTILO GLOBAL — SANACIÓN ALTERNATIVA
+--------------------------------------------*/
+
+/* ----------- ESTILO GLOBAL ----------- */
+body {
+    margin: 5px;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #c8f1df, #f0ffe6);
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.form-container {
+    background: white;
+    width: 90%;
+    max-width: 420px;
+    padding: 35px;
+    border-radius: 15px;
+    box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    border: 2px solid #a5d6b3;
+}
+
+.form-container h2 {
+    margin-bottom: 20px;
+    color: #2f6f4e;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* ====== OVERRIDE SOLO PARA EL MENÚ ====== */
+body.menu-page {
+    display: block;
+}
+
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+input[type="number"] {
+    width: 80%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;  /* ⭐ IMPORTANTE PARA MÓVILES */
+    max-width: 95%; /* Evita que se pase del ancho */
+}
+
+input:focus {
+    border-color: #2f6f4e;
+    box-shadow: 0 0 6px rgba(47, 111, 78, 0.5);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    background: #3b8f66;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #2b6b4b;
+    box-shadow: 0 0 10px rgba(43, 107, 75, 0.6);
+}
+
+.error-message {
+    background: #ffdfdf;
+    color: #b10d0d;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ffb4b4;
+}
+
+.success-message {
+    background: #defce5;
+    color: #1f6438;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #b2f2c9;
+}
+
+a {
+    color: #2f6f4e;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+.btn-secondary {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #e8f7ee;
+    color: #2f6f4e;
+    border: 1px solid #9bccad;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #d5f0e2;
+}
+
+.logo {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+/* Ajuste específico para input de fecha */
+input[type="date"] {
+    width: 100%;
+    max-width: 350px;   /* Ajusta el ancho visual */
+    padding: 12px;
+    font-size: 1.1em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Para que los campos no se desborden en celulares */
+.container input {
+    width: 100%;
+    max-width: 350px;
+}

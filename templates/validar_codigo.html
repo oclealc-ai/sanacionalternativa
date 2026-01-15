@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar Código</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Validación de Código</h2>
+        
+        {% if mensaje %}
+        <div id="mensaje" class="error">{{ mensaje }}</div>
+        {% endif %}
+        
+        <form method="POST">
+
+            <!-- 🔥 Campo oculto que indica si viene de LOGIN o ALTA -->
+            <input type="hidden" name="flujo" value="{{ flujo }}">
+
+            <label for="codigo">🔐 Código recibido:</label>
+            <input type="tel" id="codigo" name="codigo" 
+                   placeholder="Ingresa el código de 6 dígitos" 
+                   maxlength="6" 
+                   pattern="[0-9]{6}" 
+                   inputmode="numeric"
+                   required>
+
+            <button type="submit">Validar</button>
+        </form>
+    </div>
+
+</body>
+</html>

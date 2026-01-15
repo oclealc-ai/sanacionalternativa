@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Frases registradas</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            justify-content: flex-start; /* ↑ mover contenedor arriba */
+            padding-top: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(100, 255, 255, 0.02); /* más transparente */
+            backdrop-filter: blur(15px); /* más blur */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            text-align: justify;
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+            font-size: 4em;
+        }
+
+        .btn-agregar {
+            display: inline-block;
+            padding: 14px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 4em;
+            margin-bottom: 25px;
+        }
+
+        .tabla-frases {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+        }
+
+        .tabla-frases th {
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            font-size: 1.1em;
+        }
+
+        .tabla-frases td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #eef5ff;
+            cursor: pointer;
+        }
+
+        .acciones a {
+            margin-right: 10px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .acciones a:hover {
+            text-decoration: underline;
+        }
+
+        /* 📱 Letras más grandes en celular */
+        @media (max-width: 600px) {
+            body, td, th, .btn-agregar {
+                font-size: 2.5em !important;
+            }
+        }
+
+        /* Cuadro donde se mostrará la frase completa */
+        #frase-completa {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f4f4f4;
+            border-radius: 10px;
+            font-size: 4em;
+            display: none;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+       
+    <h2>📜 Listado de frases</h2>
+
+    <a href="/frases/nueva" class="btn-agregar">➕ Nueva frase</a>
+
+    <table class="tabla-frases">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Fecha</th>
+                <th>Frase</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for f in frases %}
+            <tr onclick="mostrarFrase('{{ f.frase|escape }}')">
+
+                <td>{{ f.idFrase }}</td>
+
+                <td>{{ f.fecha }}</td>
+
+                <td>
+                    {% if f.frase|length > 20 %}
+                        {{ f.frase[:20] }}...
+                    {% else %}
+                        {{ f.frase }}
+                    {% endif %}
+                </td>
+
+                <td class="acciones">
+                    <a href="/frases/editar?id={{ f.idFrase }}">✏ Editar</a>
+                    <a href="/frases/borrar?id={{ f.idFrase }}" onclick="return confirm('¿Eliminar frase?')">🗑 Borrar</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    
+
+</div>
+
+<div id="frase-completa"></div>
+
+<script>
+    function mostrarFrase(texto) {
+        const cuadro = document.getElementById("frase-completa");
+        cuadro.style.display = "block";
+        cuadro.textContent = texto;
+    }
+</script>
+
+</body>
+</html>

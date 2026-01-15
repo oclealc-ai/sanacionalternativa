@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema</title>
+    
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <style>
+        body {
+            margin: 0;
+            background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.20);
+            width: 90%;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+    </style>
+
+
+</head>
+<body>
+
+    <div class="container">
+        <h2>Ingreso de Usuarios</h2>
+        <div id="mensaje"></div>
+        
+        <form id="loginForm">
+            <label for="usuario">👤 Usuario:</label>
+            <input type="text" id="usuario" name="Usuario" required placeholder="Tu nombre de usuario">
+            
+            <label for="password">🔒 Contraseña:</label>
+            <input type="password" id="password" name="Password" required placeholder="Tu contraseña">
+            
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+    </div>
+
+    <script>
+        
+        //const API_BASE_URL = "https://angla-cantonal-workably.ngrok-free.dev";
+        const API_BASE_URL = window.location.origin;
+        const form = document.getElementById('loginForm');
+        const mensajeDiv = document.getElementById('mensaje');
+
+        // Función para mostrar mensajes de estado
+        function mostrarMensaje(texto, tipo) {
+            mensajeDiv.textContent = texto;
+            mensajeDiv.className = tipo; // 'success' o 'error'
+        }
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Evitar el envío de formulario tradicional
+            
+            const usuario = document.getElementById('usuario').value;
+            const password = document.getElementById('password').value;
+
+            // Limpiar mensaje anterior
+            mostrarMensaje('Cargando...', '');
+
+            try {
+                // Petición POST a la ruta de login de tu Flask API
+                const response = await fetch(API_BASE_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json' 
+                    },
+                    
+                    body: JSON.stringify({ usuario, password })
+                });
+
+                const data = await response.json();
+                
+                // Manejar la respuesta del servidor
+                if (response.ok) {
+                    mostrarMensaje('¡Login correcto! Tipo: ' + data.tipo, 'success');
+                    
+                    // Almacenar el tipo de usuario (para manejar la sesión)
+                    localStorage.setItem('userTipo', data.tipo);
+
+                    // Redirección CONDICIONAL
+                    if (data.tipo === 'admin') {
+                        // Redirige al menú de administrador
+                        window.location.href = API_BASE_URL + '/menu/admin'; 
+                    } else if (data.tipo === 'asistente') {
+                        // Redirige al menú de usuario asistente
+                        window.location.href = API_BASE_URL + '/menu/asistente';
+                    } else if (data.tipo === 'terapeuta') {
+                        // Redirige al menú de usuario terapeuta
+                        window.location.href = API_BASE_URL + '/menu/terapeuta';
+                    } else {
+                        // En caso de un TipoUsuario no esperado
+                        mostrarMensaje("Login correcto, pero tipo de usuario desconocido: " + data.tipo, 'error');
+                    }
+
+                } else {
+                    // Login Fallido (código de estado 401 o 400 de Flask)
+                    mostrarMensaje('Error: ' + (data.error || 'Credenciales inválidas.'), 'error');
+                }
+
+            } catch (error) {
+                mostrarMensaje('Error de conexión.', 'error');
+                console.error('Error de red:', error);
+            }
+        });
+    </script>
+</body>
+</html>

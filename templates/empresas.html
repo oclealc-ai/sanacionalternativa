@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Empresas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" href="/static/favicon.ico">
+
+    <style>
+        body {
+            margin: 0;
+            background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            width: 95%;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        h2 {
+            color: #007bff;
+            text-align: center;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .acciones button {
+            width: auto;
+            padding: 6px 10px;
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Empresas</h2>
+
+    <!-- FORMULARIO -->
+    <form method="POST">
+        <input type="hidden" name="idEmpresa" value="{{ empresa_edit.idEmpresa if empresa_edit }}">
+
+        <input type="text" name="RazonSocial" placeholder="Razón Social" required
+               value="{{ empresa_edit.RazonSocial if empresa_edit }}">
+
+        <input type="text" name="RFC" placeholder="RFC" required
+               value="{{ empresa_edit.RFC if empresa_edit }}">
+
+        <select name="FisicaMoral" required>
+            <option value="">Tipo de Persona</option>
+            <option value="F" {% if empresa_edit and empresa_edit.FisicaMoral == 'F' %}selected{% endif %}>Física</option>
+            <option value="M" {% if empresa_edit and empresa_edit.FisicaMoral == 'M' %}selected{% endif %}>Moral</option>
+        </select>
+
+        <textarea name="Direccion" placeholder="Dirección">{{ empresa_edit.Direccion if empresa_edit }}</textarea>
+
+        <input type="text" name="CodigoPostal" placeholder="Código Postal"
+               value="{{ empresa_edit.CodigoPostal if empresa_edit }}">
+
+        <input type="text" name="RegimenFiscal" placeholder="Régimen Fiscal"
+               value="{{ empresa_edit.RegimenFiscal if empresa_edit }}">
+
+        <input type="text" name="Telefono" placeholder="Teléfono"
+               value="{{ empresa_edit.Telefono if empresa_edit }}">
+
+        <input type="text" name="Contacto" placeholder="Contacto"
+               value="{{ empresa_edit.Contacto if empresa_edit }}">
+
+        <button type="submit">
+            {{ 'Actualizar Empresa' if empresa_edit else 'Guardar Empresa' }}
+        </button>
+    </form>
+
+    <!-- LISTADO -->
+    <table>
+        <thead>
+            <tr>
+                <th>Razón Social</th>
+                <th>RFC</th>
+                <th>Tipo</th>
+                <th>Contacto</th>
+                <th>Régimen</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in empresas %}
+            <tr>
+                <td>{{ e.RazonSocial }}</td>
+                <td>{{ e.RFC }}</td>
+                <td>{{ 'Física' if e.FisicaMoral == 'F' else 'Moral' }}</td>
+                <td>{{ e.Contacto }}</td>
+                <td>{{ e.RegimenFiscal }}</td>
+                <td class="acciones">
+                    <a href="/admin/empresas?edit={{ e.idEmpresa }}">
+                        <button>✏️</button>
+                    </a>
+                    <a href="/admin/empresas?delete={{ e.idEmpresa }}"
+                       onclick="return confirm('¿Eliminar empresa?')">
+                        <button class="btn-danger">🗑️</button>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

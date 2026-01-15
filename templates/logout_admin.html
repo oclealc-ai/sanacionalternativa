@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerrar Sesión</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <style>
+        body {
+            margin: 0;
+            background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.20);
+            width: 90%;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="form-container">
+        <img src="/static/img/fondo06.jpg" alt="Logo" class="logo">
+
+        <h2>Sesión Cerrada</h2>
+
+        <p style="font-size: 1.1em; margin-bottom: 20px;">
+            Administradores...
+            ¡Gracias por usar nuestro sistema!  
+            Tu sesión ha sido cerrada correctamente.
+        </p>
+
+        <a href="/login/sistema">
+            <button class="btn-primary">Iniciar sesión nuevamente</button>
+        </a>
+    </div>
+
+</body>
+</html>
