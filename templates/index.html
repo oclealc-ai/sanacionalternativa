@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -366,3 +367,373 @@
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanación Alternativa</title>
+
+    <style>
+        
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
+            background-size: cover;
+
+            display: flex;
+            flex-direction: column;   /* 👈 CLAVE */
+            align-items: center;      /* centra horizontal */
+            padding-top: 40px;
+            min-height: 100vh;
+        }
+
+
+        .menu-principal {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* centra horizontalmente todos los elementos */
+            gap: 15px;           /* espacio entre imagen, título, subtítulo y botones */
+            max-width: 900px;
+            width: 90%;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(100, 255, 255, 0.02); /* más transparente */
+            backdrop-filter: blur(15px); /* más blur */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            text-align: justify;
+        }
+
+        .portada-img {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 15px;
+        }
+
+        .layout {
+            display: flex;
+            width: 90%;
+            max-width: 1100px;
+            gap: 25px;
+        }
+    
+        .top-block {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(100, 255, 255, 0.02); /* más transparente */
+            backdrop-filter: blur(15px); /* más blur */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+            text-align: justify;
+        }
+
+        /* bloque lateral */
+        .side-block {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            color: #333;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+        }
+
+        
+
+        /* responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .side-block {
+                width: 100%;
+            }
+        }
+
+        h1, p {
+            text-align: center;
+            margin: 0; /* elimina márgenes grandes por defecto */
+        }
+
+        .btns {
+            display: flex;
+            gap: 20px;          /* espacio entre los botones */
+            justify-content: center;
+            flex-wrap: wrap;     /* en móvil se apilan si no hay espacio */
+        }
+
+        .btn {
+            background: #0078ff;
+            color: white;
+            border: none;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 150px; /* ajuste al tamaño deseado */
+            max-width: 45%; /* opcional, para que no ocupen todo en móviles */
+            padding: 10px 15px; /* opcional: menos padding */
+        }
+
+        .btn:hover {
+            background: #005fcc;
+        }
+
+        .agradecimiento {
+            display: block;
+            width: fit-content;
+            margin: 10px auto 0 auto; /* centra horizontalmente */
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .titulo-botones {
+            display: flex;
+            flex-direction: column;  /* apila título y subtítulo */
+            align-items: center;     /* centra todo horizontalmente */
+            gap: 15px;               /* espacio entre título, subtítulo y botones */
+        }
+
+        .btns {
+            display: flex;
+            justify-content: center; /* centra los botones horizontalmente */
+            gap: 20px;               /* espacio entre los botones */
+            flex-wrap: wrap;         /* permite que se acomoden en móvil si hace falta */
+        }
+        
+        /* ===== CARRUSEL ===== */
+        .carousel-container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto 0 auto;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.25);
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 20px;
+            will-change: transform;
+        }
+
+
+        .carousel-item {
+            min-width: 260px;
+            max-width: 260px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+
+        .carousel-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .carousel-description {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #222;
+            min-height: 24px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+    </style>
+</head>
+<body>
+
+    
+    <div class="layout">
+
+        <div class="top-block" id="bloqueInfo">
+            {{ frase }}
+        </div>
+
+
+        <div class="menu-principal">
+            <img src="/static/img/fondo03.jpg" class="portada-img" alt="Imagen temática">
+
+            <h1 id="titulo"></h1>
+            <p id="subtitulo"></p>
+
+            <div class="btns">
+                <button class="btn" onclick="location.href='/login/paciente'">Soy Paciente</button>
+                <button class="btn" onclick="location.href='/login/sistema'">Soy Personal</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CARRUSEL DE ANUNCIOS -->
+    <div class="carousel-container">
+        <div class="carousel-track" id="carouselTrack">
+            <!-- Slides generados por JS -->
+        </div>
+
+        <div class="carousel-description" id="carouselDescription"></div>
+    </div>
+
+<script>
+    const anuncios = [
+            {
+                img: "/static/anuncios/imagen01.jpg",
+                url: "https://ejemplo.com/1",
+                descripcion: "Terapias holísticas personalizadas",
+                activo: true
+            },
+            {
+                img: "/static/anuncios/imagen02.jpg",
+                url: "https://ejemplo.com/2",
+                descripcion: "Agenda tu cita en línea",
+                activo: true
+            },
+            {
+                img: "/static/anuncios/imagen03.jpg",
+                url: "https://ejemplo.com/3",
+                descripcion: "Promociones especiales del mes",
+                activo: true
+            },
+            {
+                img: "/static/anuncios/imagen04.jpg",
+                url: "https://ejemplo.com/4",
+                descripcion: "Terapias holísticas personalizadas",
+                activo: false
+            },
+            {
+                img: "/static/anuncios/imagen05.jpg",
+                url: "https://ejemplo.com/5",
+                descripcion: "Agenda tu cita en línea",
+                activo: false
+            },
+            {
+                img: "/static/anuncios/imagen06.jpg",
+                url: "https://ejemplo.com/6",
+                descripcion: "Promociones especiales del mes",
+                activo: false   // este NO se mostrará
+            },
+            {
+                img: "/static/anuncios/imagen07.jpg",
+                url: "https://ejemplo.com/7",
+                descripcion: "Agenda tu cita en línea",
+                activo: false
+            },
+            {
+                img: "/static/anuncios/imagen08.jpg",
+                url: "https://ejemplo.com/8",
+                descripcion: "Promociones especiales del mes",
+                activo: false   // este NO se mostrará
+            }
+        ];
+
+    const activos = anuncios.filter(a => a.activo);
+    const track = document.getElementById("carouselTrack");
+    const desc  = document.getElementById("carouselDescription");
+    const container = document.querySelector(".carousel-container");
+
+    // Duplicamos anuncios (clave del infinito)
+    const renderList = [...activos, ...activos];
+
+    renderList.forEach((a, i) => {
+        const item = document.createElement("div");
+        item.className = "carousel-item";
+        item.onclick = () => window.location.href = a.url;
+        item.dataset.desc = a.descripcion;
+        item.innerHTML = `<img src="${a.img}" alt="anuncio">`;
+        track.appendChild(item);
+    });
+
+    let position = 0;
+    let paused = false;
+    const speed = 0.4; // velocidad (px por frame)
+    const itemWidth = 280; // ancho + gap
+    const resetPoint = itemWidth * activos.length;
+
+    function animate() {
+        if (!paused) {
+            position += speed;
+
+            if (position >= resetPoint) {
+                position -= resetPoint;
+            }
+
+            track.style.transform = `translateX(-${position}px)`;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+
+    // Hover: pausa + descripción
+    container.addEventListener("mouseenter", (e) => {
+        paused = true;
+
+        const rect = container.getBoundingClientRect();
+        const style = getComputedStyle(container);
+        const paddingLeft = parseFloat(style.paddingLeft);
+
+        const x = e.clientX - rect.left - paddingLeft;
+        const index = Math.floor((position + x) / itemWidth) % activos.length;
+
+        desc.innerText = activos[index].descripcion;
+        desc.style.opacity = "1";
+    });
+
+
+        container.addEventListener("mousemove", (e) => {
+            if (!paused) return;
+
+            const rect = container.getBoundingClientRect();
+            const style = getComputedStyle(container);
+            const paddingLeft = parseFloat(style.paddingLeft);
+
+            const x = e.clientX - rect.left - paddingLeft;
+            const index = Math.floor((position + x) / itemWidth) % activos.length;
+
+            desc.innerText = activos[index].descripcion;
+        });
+
+
+    container.addEventListener("mouseleave", () => {
+        paused = false;
+        desc.style.opacity = "0";
+    });
+
+    animate();
+
+    // Texto principal
+    document.getElementById("titulo").innerText = "Sanación Alternativa Nueva Era";
+    document.getElementById("subtitulo").innerText = "Que tipo de usuario eres?";
+</script>
+
+    
+
+
+</body>
+</html>
+>>>>>>> 94d099d (Ajuste de texto en index.html)
