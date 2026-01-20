@@ -46,7 +46,6 @@ def home():
 
 @app.route('/index')
 def index():
-    log("prueba de log en app.py")
     conn = conectar_bd()
     cursor = conn.cursor()
 
@@ -234,7 +233,8 @@ def frases_editar():
 @app.route('/frases/actualizar', methods=['POST'])
 def frases_actualizar():
 
-    frase = request.form.get("frase").strip()
+    frase = request.form.get("frase", "").strip()
+    
     idf = request.form.get("idFrase")
     
     conn = conectar_bd()
