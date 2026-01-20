@@ -130,7 +130,8 @@ def login():
         session["tipoUsuario"] = resultado["TipoUsuario"]
         session['Usuario'] = resultado['Usuario']      # username
         session['NombreUsuario'] = resultado['NombreUsuario']  # nombre completo        
-        
+        session["IdEmpresa"] = resultado["IdEmpresa"]
+
         return jsonify({
             "mensaje": "Login correcto",
             "usuario": resultado["Usuario"],
@@ -195,6 +196,7 @@ def frases_guardar():
 
         frase = request.form.get("frase", "")
         frase = frase.strip()
+        empresa = int(session.get("IdEmpresa", 2))
 
         if not frase:
             log("Frase vacía")
@@ -208,8 +210,8 @@ def frases_guardar():
         cursor = conn.cursor()
 
         cursor.execute(
-            "INSERT INTO frases (frase, fecha) VALUES (%s, %s)",
-            (frase, hoy)
+            "INSERT INTO frases (frase, fecha, idEmpresa) VALUES (%s, %s, %s)",
+            (frase, hoy, empresa)
         )
 
         conn.commit()
