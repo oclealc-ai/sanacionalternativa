@@ -190,24 +190,40 @@ def frases_nueva():
 # ---- GUARDAR NUEVA FRASE ----
 @app.route('/frases/guardar', methods=['POST'])
 def frases_guardar():
+    try:
+        log("Formulario recibido: " + str(request.form))
 
-    frase = request.form.get("frase").strip()
+        frase = request.form.get("frase", "")
+        frase = frase.strip()
 
-    if not frase:
-        return "La frase no puede estar vacía", 400
+        if not frase:
+            log("Frase vacía")
+            return "La frase no puede estar vacía", 400
 
-    hoy = date.today()   # <-- genera fecha tipo DATE
+        #hoy = date.today()
+        hoy = date.today().strftime("%Y-%m-%d")
 
-    conn = conectar_bd()
-    cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO frases (frase, fecha) VALUES (%s, %s)", (frase, hoy))
-    conn.commit()
+        conn = conectar_bd()
+        cursor = conn.cursor()
 
-    cursor.close()
-    conn.close()
+        cursor.execute(
+            "INSERT INTO frases (frase, fecha) VALUES (%s, %s)",
+            (frase, hoy)
+        )
 
-    return redirect("/frases")
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        log("Frase insertada correctamente")
+
+        return redirect("/frases")
+
+    except Exception as e:
+        log("ERROR AL GUARDAR FRASE: " + str(e))
+        return "Error interno al guardar la frase", 500
+
 
 
 # ---- EDITAR FRASE ----
@@ -234,7 +250,7 @@ def frases_editar():
 def frases_actualizar():
 
     frase = request.form.get("frase", "").strip()
-    
+
     idf = request.form.get("idFrase")
     
     conn = conectar_bd()
