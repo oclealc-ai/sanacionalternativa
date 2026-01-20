@@ -132,6 +132,8 @@ def login():
         session['NombreUsuario'] = resultado['NombreUsuario']  # nombre completo        
         session["IdEmpresa"] = resultado["IdEmpresa"]
 
+        log("SESSION: " + str(dict(session)))
+
         return jsonify({
             "mensaje": "Login correcto",
             "usuario": resultado["Usuario"],
@@ -196,7 +198,7 @@ def frases_guardar():
 
         frase = request.form.get("frase", "")
         frase = frase.strip()
-        empresa = int(session.get("IdEmpresa", 2))
+        empresa = int(session.get("idEmpresa", 2))
 
         if not frase:
             log("Frase vacía")
@@ -408,6 +410,10 @@ def cambiar_password():
 
 
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.exception("EXCEPCIÓN NO CONTROLADA")
+    return "Error interno", 500
 
 
 # ============================================================
