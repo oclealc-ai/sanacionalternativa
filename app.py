@@ -144,7 +144,9 @@ def login():
         )
         empresa_row = cursor.fetchone()
 
-        session["RazonSocial"] = empresa_row[0] if empresa_row else ""
+        #session["RazonSocial"] = empresa_row[0] if empresa_row else ""
+        session["RazonSocial"] = empresa_row["RazonSocial"] if empresa_row else ""
+
 
         log(f"empresa_row={empresa_row} tipo={type(empresa_row)}")
 
