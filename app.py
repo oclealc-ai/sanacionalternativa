@@ -130,9 +130,6 @@ def login():
 
         resultado = cursor.fetchone()
 
-        cursor.close()
-        conn.close()
-
         # Usuario NO existe
         if not resultado:
             return jsonify({"error": "Usuario no existe en esta empresa"}), 401
@@ -141,6 +138,20 @@ def login():
         if not check_password_hash(resultado["Password"], password):
             return jsonify({"error": "Contraseña incorrecta"}), 401
 
+        cursor.execute(
+            "SELECT RazonSocial FROM Empresa WHERE idEmpresa = %s",
+            (usuario["idEmpresa"],)
+        )
+        empresa = cursor.fetchone()
+
+        if empresa:
+            session["RazonSocial"] = empresa["RazonSocial"]
+        else:
+            session["RazonSocial"] = ""
+
+        cursor.close()
+        conn.close()
+        
         # Login correcto
         session["idUsuario"] = resultado["IdUsuario"]
         session["tipoUsuario"] = resultado["TipoUsuario"]
@@ -181,20 +192,26 @@ def menu_admin():
 def menu_terapeuta():
     if "idUsuario" not in session:
         return redirect("/login/sistema")
-    return render_template('menu_terapeuta.html', nombre=session.get('NombreUsuario'))
+    return render_template('menu_terapeuta.html',
+                            nombre=session.get('NombreUsuario'),
+                            empresa=session.get('RazonSocial')
+                          )
 
 
 @app.route('/menu/asistente')
 def menu_asistente():
     if "idUsuario" not in session:
         return redirect("/login/sistema")
-    return render_template('menu_asistente.html', nombre=session.get('NombreUsuario'))
+    return render_template('menu_asistente.html', nombre=session.get('NombreUsuario'),empresa=session.get('RazonSocial'))
+
 
 @app.route('/menu/paciente')
 def menu_paciente():
     if "idUsuario" not in session:
         return redirect("/login/sistema")
-    return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'))
+    return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'), empresa=session.get('RazonSocial'))
+#luego vemos la empresa en este menu de pacientes, para ver de donde llega el valor
+
 
 # ---- LISTAR FRASES ----
 @app.route('/frases')
