@@ -100,18 +100,30 @@ def alta_paciente():
 
 @app.route('/auth/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    
+    # Aceptar JSON o FORM
+    data = request.get_json(silent=True)
+    if data is None:
+        data = request.form
+
     usuario = data.get('usuario', '').strip().upper()
     password = data.get('password', '')
+    id_empresa = data.get('idEmpresa')
 
-    if not usuario or not password:
-        return jsonify({"error": "Falta usuario o contraseña"}), 400
+    if not usuario or not password or not id_empresa:
+        return jsonify({"error": "Faltan datos"}), 400
 
     try:
         conn = conectar_bd()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT * FROM usuarios WHERE Usuario=%s", (usuario,))
+        cursor.execute("""
+            SELECT *
+            FROM usuarios
+            WHERE Usuario = %s
+            AND IdEmpresa = %s
+        """, (usuario, id_empresa))
+
         resultado = cursor.fetchone()
 
         cursor.close()
@@ -130,7 +142,7 @@ def login():
         session["tipoUsuario"] = resultado["TipoUsuario"]
         session['Usuario'] = resultado['Usuario']      # username
         session['NombreUsuario'] = resultado['NombreUsuario']  # nombre completo        
-        session["IdEmpresa"] = resultado["IdEmpresa"]
+        session["idEmpresa"] = resultado["IdEmpresa"]
 
         log("SESSION: " + str(dict(session)))
 
@@ -152,26 +164,37 @@ def login():
 
 @app.route('/menu/admin')
 def menu_admin():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template('menu_admin.html', nombre=session.get('NombreUsuario'))
+
 
 
 
 @app.route('/menu/terapeuta')
 def menu_terapeuta():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template('menu_terapeuta.html', nombre=session.get('NombreUsuario'))
 
 
 @app.route('/menu/asistente')
 def menu_asistente():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template('menu_asistente.html', nombre=session.get('NombreUsuario'))
 
 @app.route('/menu/paciente')
 def menu_paciente():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'))
 
 # ---- LISTAR FRASES ----
 @app.route('/frases')
 def frases_listado():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
 
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
@@ -187,18 +210,26 @@ def frases_listado():
 
 @app.route('/frases/nueva')
 def frases_nueva():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template("nueva_frase.html")
 
 
 # ---- GUARDAR NUEVA FRASE ----
 @app.route('/frases/guardar', methods=['POST'])
 def frases_guardar():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     try:
         log("Formulario recibido: " + str(request.form))
 
         frase = request.form.get("frase", "")
         frase = frase.strip()
-        empresa = int(session.get("idEmpresa", 2))
+        empresa = session.get("idEmpresa")
+        if not empresa:
+            log("Empresa no definida en sesión")
+            return "Empresa no definida en sesión", 403
+
 
         if not frase:
             log("Frase vacía")
@@ -233,6 +264,8 @@ def frases_guardar():
 # ---- EDITAR FRASE ----
 @app.route('/frases/editar')
 def frases_editar():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
 
     idf = request.args.get("id")
 
@@ -252,6 +285,8 @@ def frases_editar():
 # ---- ACTUALIZAR FRASE ----
 @app.route('/frases/actualizar', methods=['POST'])
 def frases_actualizar():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
 
     frase = request.form.get("frase", "").strip()
 
@@ -274,6 +309,8 @@ def frases_actualizar():
 # ---- BORRAR FRASE ----
 @app.route('/frases/borrar')
 def frases_borrar():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
 
     idf = request.args.get("id")
 
@@ -297,6 +334,8 @@ def frases_borrar():
 # ---------- LISTA DE USUARIOS ----------
 @app.route('/admin/usuarios')
 def admin_usuarios():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
 
@@ -313,6 +352,8 @@ def admin_usuarios():
 # ---------- FORMULARIO DE ALTA ----------
 @app.route('/admin/usuarios/nuevo')
 def admin_usuarios_nuevo():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     return render_template("admin_usuarios_nuevo.html")  # este HTML lo creas abajo
 
 
@@ -355,6 +396,8 @@ def admin_usuarios_guardar():
 
 @citas_admin_bp.route("/admin/cambiar_password", methods=["GET", "POST"])
 def cambiar_password():
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
     if request.method == "POST":
         actual = request.form.get("actual")
         nueva = request.form.get("nueva")

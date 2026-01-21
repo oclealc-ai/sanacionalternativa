@@ -43,13 +43,16 @@
             <label for="password">🔒 Contraseña:</label>
             <input type="password" id="password" name="Password" required placeholder="Tu contraseña">
             
+            <label for="empresa"> Empresa:</label>
+            <input type="number" id="empresa" placeholder="Empresa" required>
+
+
             <button type="submit">Iniciar Sesión</button>
         </form>
     </div>
 
     <script>
         
-        //const API_BASE_URL = "https://angla-cantonal-workably.ngrok-free.dev";
         const API_BASE_URL = window.location.origin;
         const form = document.getElementById('loginForm');
         const mensajeDiv = document.getElementById('mensaje');
@@ -77,7 +80,7 @@
                         'Content-Type': 'application/json' 
                     },
                     
-                    body: JSON.stringify({ usuario, password })
+                    body: JSON.stringify({ usuario, password, empresa })
                 });
 
                 const data = await response.json();
