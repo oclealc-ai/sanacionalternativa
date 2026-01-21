@@ -3,80 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú de Administrador</title>
-    
+    <title>Menú Administrador</title>
+
     <link rel="stylesheet" href="/static/css/sanacion.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <style>
+        body {
+            background: linear-gradient(135deg, #e8f5f0, #f6fbf9);
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        .menu-wrapper {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .menu-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 18px;
+            padding: 35px 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .empresa {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a6f64;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin: 10px 0 15px;
+            color: #1f3d36;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 50px;
+            background: #dff3ec;
+            color: #1f6b58;
+            margin-bottom: 30px;
+        }
+
         .menu-opciones {
-            margin-top: 30px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
         .menu-btn {
-            padding: 15px;
-            font-size: 18px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
             border: none;
-            border-radius: 8px;
             cursor: pointer;
-            background-color: #2b7bff;
+            background: #2b7bff;
             color: white;
-            transition: 0.3s;
+            transition: all 0.25s ease;
         }
 
         .menu-btn:hover {
-            background-color: #1a57c9;
+            background: #1f5fd1;
+            transform: translateY(-2px);
         }
 
-        .role-tag {
-            margin-top: 10px;
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 5px;
-            background-color: #b1c028;
-            color: #200861;
-            display: inline-block;
-            
+        .menu-btn.secondary {
+            background: #5bbfa6;
+        }
+
+        .menu-btn.secondary:hover {
+            background: #46a08a;
         }
 
         .logout-btn {
-            background-color: #d9534f;
+            margin-top: 30px;
+            background: #e55353;
         }
 
         .logout-btn:hover {
-            background-color: #b03c38;
+            background: #c84242;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+<div class="menu-wrapper">
+    <div class="menu-card">
+
         <div class="empresa">
             {{ empresa }}
         </div>
 
-        <h1>Menu del Administrador</h1>
-        
-        <div class="role-tag">Tipo de Usuario: ADMINISTRADOR</div>
+        <h1>Menú del Administrador</h1>
+
+        <div class="role-badge">
+            ADMINISTRADOR
+        </div>
 
         <div class="menu-opciones">
             <button class="menu-btn" onclick="window.location.href='/admin/usuarios'">
-                Usuarios
+                Gestión de Usuarios
             </button>
 
-            <button class="menu-btn" onclick="window.location.href='/admin/empresas'">
-                Empresas
+            <button class="menu-btn secondary" onclick="window.location.href='/admin/empresas'">
+                Gestión de Empresas
             </button>
-
         </div>
-
-        <br>
 
         <button class="menu-btn logout-btn" onclick="window.location.href='/logout/admin'">
             Cerrar sesión
         </button>
+
     </div>
+</div>
+
 </body>
 </html>
