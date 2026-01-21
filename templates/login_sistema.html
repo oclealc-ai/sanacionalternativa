@@ -68,7 +68,16 @@
             
             const usuario = document.getElementById('usuario').value;
             const password = document.getElementById('password').value;
+            const empresa = parseInt(document.getElementById('empresa').value);
 
+            
+            console.log({
+                usuario,
+                password,
+                empresa,
+                tipoEmpresa: typeof empresa
+            });
+            
             // Limpiar mensaje anterior
             mostrarMensaje('Cargando...', '');
 
@@ -80,7 +89,11 @@
                         'Content-Type': 'application/json' 
                     },
                     
-                    body: JSON.stringify({ usuario, password, empresa })
+                    body: JSON.stringify({
+                        usuario,
+                        password,
+                        idEmpresa: empresa
+                    })
                 });
 
                 const data = await response.json();
