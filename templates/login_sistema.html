@@ -40,10 +40,10 @@
             <label for="usuario">👤 Usuario:</label>
             <input type="text" id="usuario" name="Usuario" required placeholder="Tu nombre de usuario">
             
-            <label for="password">🔒 Contraseña:</label>
+            <label for="password"><br>🔒 Contraseña:</label>
             <input type="password" id="password" name="Password" required placeholder="Tu contraseña">
             
-            <label for="empresa"> Empresa:</label>
+            <label for="empresa"><br>Empresa:</label>
             <input type="number" id="empresa" placeholder="Empresa" required>
 
 
@@ -71,12 +71,7 @@
             const empresa = parseInt(document.getElementById('empresa').value);
 
             
-            console.log({
-                usuario,
-                password,
-                empresa,
-                tipoEmpresa: typeof empresa
-            });
+            console.log({usuario, password, empresa});
             
             // Limpiar mensaje anterior
             mostrarMensaje('Cargando...', '');
@@ -89,11 +84,7 @@
                         'Content-Type': 'application/json' 
                     },
                     
-                    body: JSON.stringify({
-                        usuario,
-                        password,
-                        idEmpresa: empresa
-                    })
+                    body: JSON.stringify({usuario, password, empresa})
                 });
 
                 const data = await response.json();
@@ -105,24 +96,19 @@
                     // Almacenar el tipo de usuario (para manejar la sesión)
                     localStorage.setItem('userTipo', data.tipo);
 
-                    // Redirección CONDICIONAL
                     if (data.tipo === 'admin') {
-                        // Redirige al menú de administrador
                         window.location.href = API_BASE_URL + '/menu/admin'; 
                     } else if (data.tipo === 'asistente') {
-                        // Redirige al menú de usuario asistente
                         window.location.href = API_BASE_URL + '/menu/asistente';
                     } else if (data.tipo === 'terapeuta') {
-                        // Redirige al menú de usuario terapeuta
                         window.location.href = API_BASE_URL + '/menu/terapeuta';
                     } else {
-                        // En caso de un TipoUsuario no esperado
                         mostrarMensaje("Login correcto, pero tipo de usuario desconocido: " + data.tipo, 'error');
                     }
 
                 } else {
                     // Login Fallido (código de estado 401 o 400 de Flask)
-                    mostrarMensaje('Error: ' + (data.error || 'Credenciales inválidas.'), 'error');
+                    mostrarMensaje('Error: ' + (data.error || 'Error de login'), 'error');
                 }
 
             } catch (error) {

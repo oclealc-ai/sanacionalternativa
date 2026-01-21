@@ -101,18 +101,22 @@ def alta_paciente():
 @app.route('/auth/login', methods=['POST'])
 def login():
     
-    # Aceptar JSON o FORM
     data = request.get_json(silent=True)
-    if data is None:
-        data = request.form
+    if not data:
+        return jsonify({"error": "Datos inválidos"}), 400
 
     usuario = data.get('usuario', '').strip().upper()
     password = data.get('password', '')
-    id_empresa = data.get('idEmpresa')
+    empresa = data.get('empresa')
 
-    if not usuario or not password or not id_empresa:
+    if not usuario or not password or not empresa:
         return jsonify({"error": "Faltan datos"}), 400
 
+    try:
+        empresa = int(empresa)
+    except:
+        return jsonify({"error": "Empresa inválida"}), 400
+    
     try:
         conn = conectar_bd()
         cursor = conn.cursor(dictionary=True)
@@ -121,8 +125,8 @@ def login():
             SELECT *
             FROM usuarios
             WHERE Usuario = %s
-            AND IdEmpresa = %s
-        """, (usuario, id_empresa))
+            AND idEmpresa = %s
+        """, (usuario, empresa))
 
         resultado = cursor.fetchone()
 
@@ -131,7 +135,7 @@ def login():
 
         # Usuario NO existe
         if not resultado:
-            return jsonify({"error": "Usuario no encontrado"}), 401
+            return jsonify({"error": "Usuario no existe en esta empresa"}), 401
 
         # Contraseña incorrecta
         if not check_password_hash(resultado["Password"], password):
@@ -142,9 +146,10 @@ def login():
         session["tipoUsuario"] = resultado["TipoUsuario"]
         session['Usuario'] = resultado['Usuario']      # username
         session['NombreUsuario'] = resultado['NombreUsuario']  # nombre completo        
-        session["idEmpresa"] = resultado["IdEmpresa"]
+        session["idEmpresa"] = resultado["idEmpresa"]
 
         log("SESSION: " + str(dict(session)))
+        log(f"LOGIN OK → Usuario:{usuario} Empresa:{empresa}")
 
         return jsonify({
             "mensaje": "Login correcto",
@@ -153,6 +158,7 @@ def login():
         }), 200
 
     except Exception as e:
+        log("ERROR LOGIN: " + str(e))
         return jsonify({"error": str(e)}), 500
 
 
