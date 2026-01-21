@@ -105,18 +105,18 @@ def login():
     if not data:
         return jsonify({"error": "Datos inválidos"}), 400
 
-    usuario = data.get('usuario', '').strip().upper()
+    usuario_input = data.get('usuario', '').strip().upper()
     password = data.get('password', '')
-    empresa = data.get('empresa')
+    empresa_id = data.get('empresa')
 
-    if not usuario or not password or not empresa:
+    if not usuario_input or not password or not empresa_id:
         return jsonify({"error": "Faltan datos"}), 400
 
     try:
-        empresa = int(empresa)
+        empresa_id = int(empresa_id)
     except:
         return jsonify({"error": "Empresa inválida"}), 400
-    
+
     try:
         conn = conectar_bd()
         cursor = conn.cursor(dictionary=True)
@@ -126,47 +126,46 @@ def login():
             FROM usuarios
             WHERE Usuario = %s
             AND idEmpresa = %s
-        """, (usuario, empresa))
+        """, (usuario_input, empresa_id))
 
-        resultado = cursor.fetchone()
+        usuario_db = cursor.fetchone()
 
-        # Usuario NO existe
-        if not resultado:
+        if not usuario_db:
             return jsonify({"error": "Usuario no existe en esta empresa"}), 401
 
         # Contraseña incorrecta
-        if not check_password_hash(resultado["Password"], password):
+        if not check_password_hash(usuario_db["Password"], password):
             return jsonify({"error": "Contraseña incorrecta"}), 401
+
 
         cursor.execute(
             "SELECT RazonSocial FROM Empresa WHERE idEmpresa = %s",
-            (usuario["idEmpresa"],)
+            (usuario_db["idEmpresa"],)
         )
-        empresa = cursor.fetchone()
+        empresa_row = cursor.fetchone()
 
-        if empresa:
-            session["RazonSocial"] = empresa[0]
-        else:
-            session["RazonSocial"] = ""
+        session["RazonSocial"] = empresa_row[0] if empresa_row else ""
+
+        log(f"empresa_row={empresa_row} tipo={type(empresa_row)}")
 
         
         cursor.close()
         conn.close()
         
         # Login correcto
-        session["idUsuario"] = resultado["IdUsuario"]
-        session["tipoUsuario"] = resultado["TipoUsuario"]
-        session['Usuario'] = resultado['Usuario']      # username
-        session['NombreUsuario'] = resultado['NombreUsuario']  # nombre completo        
-        session["idEmpresa"] = resultado["idEmpresa"]
+        session["idUsuario"] = usuario_db["IdUsuario"]
+        session["tipoUsuario"] = usuario_db["TipoUsuario"]
+        session['Usuario'] = usuario_db['Usuario']      # username
+        session['NombreUsuario'] = usuario_db['NombreUsuario']  # nombre completo        
+        session["idEmpresa"] = usuario_db["idEmpresa"]
 
         log("SESSION: " + str(dict(session)))
-        log(f"LOGIN OK → Usuario:{usuario} Empresa:{empresa}")
+        log(f"LOGIN OK → Usuario:{usuario_input} Empresa:{empresa_id}")
 
         return jsonify({
             "mensaje": "Login correcto",
-            "usuario": resultado["Usuario"],
-            "tipo": resultado["TipoUsuario"]
+            "usuario": usuario_db["Usuario"],
+            "tipo": usuario_db["TipoUsuario"]
         }), 200
 
     except Exception as e:
