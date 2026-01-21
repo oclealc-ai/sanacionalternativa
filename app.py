@@ -145,10 +145,11 @@ def login():
         empresa = cursor.fetchone()
 
         if empresa:
-            session["RazonSocial"] = empresa["RazonSocial"]
+            session["RazonSocial"] = empresa[0]
         else:
             session["RazonSocial"] = ""
 
+        
         cursor.close()
         conn.close()
         
