@@ -185,7 +185,7 @@ def login():
 def menu_admin():
     if "idUsuario" not in session:
         return redirect("/login/sistema")
-    return render_template('menu_admin.html', nombre=session.get('NombreUsuario'))
+    return render_template('menu_admin.html', nombre=session.get('NombreUsuario'),empresa=session.get('RazonSocial'))
 
 
 
