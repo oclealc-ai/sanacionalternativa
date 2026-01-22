@@ -10,8 +10,15 @@
 
     <style>
         body {
-            background: linear-gradient(135deg, #e8f5f0, #f6fbf9);
-            font-family: "Segoe UI", Tahoma, sans-serif;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
+            background-size: cover;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .menu-wrapper {
@@ -33,7 +40,7 @@
         }
 
         .empresa {
-            font-size: 14px;
+            font-size: 20px;
             font-weight: 600;
             color: #4a6f64;
             margin-bottom: 5px;
@@ -45,17 +52,6 @@
             font-size: 26px;
             margin: 10px 0 15px;
             color: #1f3d36;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 50px;
-            background: #dff3ec;
-            color: #1f6b58;
-            margin-bottom: 30px;
         }
 
         .menu-opciones {
@@ -71,23 +67,16 @@
             border-radius: 12px;
             border: none;
             cursor: pointer;
-            background: #2b7bff;
+            background: #5bbfa6;
             color: white;
             transition: all 0.25s ease;
         }
 
         .menu-btn:hover {
-            background: #1f5fd1;
+            background: #1cbd72;
             transform: translateY(-2px);
         }
 
-        .menu-btn.secondary {
-            background: #5bbfa6;
-        }
-
-        .menu-btn.secondary:hover {
-            background: #46a08a;
-        }
 
         .logout-btn {
             margin-top: 30px;
@@ -108,18 +97,14 @@
             {{ empresa }}
         </div>
 
-        <h1>Menú del Administrador</h1>
-
-        <div class="role-badge">
-            ADMINISTRADOR
-        </div>
+        <h3>Menú del Administrador</h3>
 
         <div class="menu-opciones">
             <button class="menu-btn" onclick="window.location.href='/admin/usuarios'">
                 Gestión de Usuarios
             </button>
 
-            <button class="menu-btn secondary" onclick="window.location.href='/admin/empresas'">
+            <button class="menu-btn" onclick="window.location.href='/admin/empresas'">
                 Gestión de Empresas
             </button>
         </div>
