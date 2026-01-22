@@ -471,11 +471,15 @@ def eliminar_usuario(id):
         return redirect("/admin/usuarios")
 
 
-    cursor.execute("DELETE FROM usuarios WHERE idUsuario=%s", (id,))
-    conexion.commit()
-
-    cursor.close()
-    conexion.close()
+    try:
+        cursor.execute("DELETE FROM usuarios WHERE idUsuario=%s", (id,))
+        conexion.commit()
+    except Exception as e:
+        conexion.rollback()
+        raise e
+    finally:
+        cursor.close()
+        conexion.close()
 
     return redirect("/admin/usuarios")
 

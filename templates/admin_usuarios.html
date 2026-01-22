@@ -88,24 +88,20 @@
                                 onclick="window.location.href='/admin/usuarios/editar/{{ u.IdUsuario }}'">
                             ✏️ Editar
                         </button>
-
-                        <button class="accion-btn eliminar"
-                                onclick="confirmarEliminar('{{ u.IdUsuario }}')">
-                            🗑 Eliminar
-                        </button>
+                        <form action="/admin/usuarios/eliminar/{{ u.IdUsuario }}" method="POST"
+                            onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');"
+                            style="display:inline;">
+                            <button type="submit" class="accion-btn eliminar">
+                                🗑 Eliminar
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <script>
-            function confirmarEliminar(id) {
-                if (confirm("¿Seguro que deseas eliminar este usuario?")) {
-                    window.location.href = "/admin/usuarios/eliminar/" + id;
-                }
-            }
-        </script>
+
 
     </div>
 
