@@ -13,14 +13,13 @@
     <h1>Agregar Usuario</h1>
 
     <form action="/admin/usuarios/guardar" method="POST">
-
         <label>Usuario:</label>
-        <input type="text" name="Usuario" required>
+        <input type="text" name="Usuario" autocomplete="off" required>
 
-        <label>Contraseña:</label>
-        <input type="password" name="Password" required>
+        <label><br>Contraseña:</label>
+        <input type="password" name="Password" autocomplete="new-password" required>
 
-        <label>Tipo de Usuario:</label>
+        <label><br>Tipo de Usuario:</label>
         <select name="TipoUsuario" required>
             <option value="">Seleccione...</option>
             <option value="ADMIN">ADMIN</option>

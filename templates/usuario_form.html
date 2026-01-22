@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Editar Usuario' if modo == 'editar' else 'Nuevo Usuario' }}</title>
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+</head>
+
+<body>
+
+<div class="container">
+    <h1>{{ 'Editar Usuario' if modo == 'editar' else 'Agregar Usuario' }}</h1>
+
+    <form action="{{ url }}" method="POST" autocomplete="off">
+
+        <!-- USUARIO -->
+        <label>Usuario:</label>
+        <input type="text" name="Usuario"
+               value="{{ usuario.Usuario if modo == 'editar' else '' }}"
+               {% if modo == 'editar' %}readonly{% endif %} required>
+
+        <!-- PASSWORD SOLO EN NUEVO -->
+        {% if modo == 'nuevo' %}
+        <label><br>Contraseña:</label>
+        <input type="password" name="Password" autocomplete="new-password" required>
+        {% endif %}
+
+        <!-- TIPO USUARIO -->
+        <label><br>Tipo de Usuario:</label>
+        <select name="TipoUsuario" required>
+            <option value="">Seleccione...</option>
+            <option value="ADMIN" {{ 'selected' if usuario.TipoUsuario=='ADMIN' else '' }}>ADMIN</option>
+            <option value="TERAPEUTA" {{ 'selected' if usuario.TipoUsuario=='TERAPEUTA' else '' }}>TERAPEUTA</option>
+            <option value="ASISTENTE" {{ 'selected' if usuario.TipoUsuario=='ASISTENTE' else '' }}>ASISTENTE</option>
+        </select>
+
+        <br><br>
+        <button type="submit" class="btn">Guardar</button>
+        <button type="button" class="btn cancel" onclick="window.location.href='/admin/usuarios'">Cancelar</button>
+
+    </form>
+</div>
+
+</body>
+</html>

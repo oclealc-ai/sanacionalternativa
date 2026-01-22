@@ -1,4 +1,5 @@
 from flask                      import Flask, render_template, request, jsonify, session, redirect
+import mysql
 from werkzeug.security          import generate_password_hash, check_password_hash
 from datetime                   import date
 
@@ -373,19 +374,38 @@ def admin_usuarios():
     return render_template("admin_usuarios.html", usuarios=usuarios)
 
 
+@app.route("/admin/usuarios/nuevo")
+def usuario_nuevo():
+    return render_template("usuario_form.html",modo="nuevo",usuario={},url="/admin/usuarios/guardar")
 
-# ---------- FORMULARIO DE ALTA ----------
-@app.route('/admin/usuarios/nuevo')
-def admin_usuarios_nuevo():
+@app.route("/admin/usuarios/editar/<int:id>")
+def usuario_editar(id):
     if "idUsuario" not in session:
         return redirect("/login/sistema")
-    return render_template("admin_usuarios_nuevo.html")  # este HTML lo creas abajo
 
+    conexion = conectar_bd()
+    cursor = conexion.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM usuarios WHERE idUsuario=%s", (id,))
+    usuario = cursor.fetchone()
+
+    cursor.close()
+    conexion.close()
+
+    if not usuario:
+        return redirect("/admin/usuarios")
+
+    return render_template(
+        "usuario_form.html",
+        modo="editar",
+        usuario=usuario,
+        url=f"/admin/usuarios/actualizar/{id}"
+    )
 
 
 # ---------- GUARDAR USUARIO ----------
 @app.route('/admin/usuarios/guardar', methods=['POST'])
-def admin_usuarios_guardar():
+def guardar_usuario():
     usuario = request.form.get('Usuario')
     password_plano = request.form.get('Password')
     password_encriptado = generate_password_hash(password_plano)
@@ -393,6 +413,10 @@ def admin_usuarios_guardar():
 
     if not usuario or not password_plano or not tipo:
         return "Faltan datos", 400
+
+    empresa_id = session.get("idEmpresa")
+    if not empresa_id:
+        return "Empresa no definida en sesión", 403
 
     # Convertir a MAYÚSCULAS
     usuario = usuario.upper()
@@ -402,21 +426,36 @@ def admin_usuarios_guardar():
     if not re.match(r'^[A-Z0-9_-]+$', usuario):
         return "❌ El usuario contiene caracteres no permitidos.", 400
     
-    # 🔐 Encriptar contraseña
-    password_encriptado = generate_password_hash(password_plano)
-    
     conexion = conectar_bd()
     cursor = conexion.cursor()
 
-    sql = """INSERT INTO usuarios (Usuario, Password, TipoUsuario)
-             VALUES (%s, %s, %s)"""
-    cursor.execute(sql, (usuario, password_encriptado, tipo))
+    sql = """INSERT INTO usuarios (Usuario, Password, TipoUsuario, idEmpresa)
+             VALUES (%s, %s, %s, %s)"""
+    cursor.execute(sql, (usuario, password_encriptado, tipo, empresa_id))
     conexion.commit()
 
     cursor.close()
     conexion.close()
 
     return redirect('/admin/usuarios')
+
+@app.route("/admin/usuarios/actualizar/<int:id>", methods=["POST"])
+def actualizar_usuario(id):
+    TipoUsuario = request.form["TipoUsuario"]
+
+    conexion = conectar_bd()
+    cursor = conexion.cursor(dictionary=True)
+    
+    cursor.execute("""
+        UPDATE Usuarios SET TipoUsuario=%s WHERE idUsuario=%s
+    """, (TipoUsuario, id))
+
+    conexion.commit()
+
+    cursor.close()
+    conexion.close()
+
+    return redirect("/admin/usuarios")
 
 
 @citas_admin_bp.route("/admin/cambiar_password", methods=["GET", "POST"])
