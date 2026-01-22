@@ -374,9 +374,7 @@ def admin_usuarios():
     return render_template("admin_usuarios.html", usuarios=usuarios)
 
 
-@app.route("/admin/usuarios/nuevo")
-def usuario_nuevo():
-    return render_template("usuario_form.html",modo="nuevo",usuario={},url="/admin/usuarios/guardar")
+
 
 @app.route("/admin/usuarios/editar/<int:id>")
 def usuario_editar(id):
@@ -402,6 +400,10 @@ def usuario_editar(id):
         url=f"/admin/usuarios/actualizar/{id}"
     )
 
+
+@app.route("/admin/usuarios/nuevo")
+def usuario_nuevo():
+    return render_template("usuario_form.html",modo="nuevo",usuario={},url="/admin/usuarios/guardar")
 
 # ---------- GUARDAR USUARIO ----------
 @app.route('/admin/usuarios/guardar', methods=['POST'])
