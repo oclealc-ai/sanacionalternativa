@@ -64,11 +64,11 @@
         <h1>Usuarios</h1>
         <p>Administración de usuarios del sistema.</p>
 
-        <button class="nuevo-btn" onclick="window.location.href='/admin/usuarios/nuevo'">
+        <button class="nuevo-btn" onclick="window.location.replace='/admin/usuarios/nuevo'">
             ➕ Agregar Usuario
         </button>
         
-        <button class="nuevo-btn" onclick="window.location.href='/menu/admin'">
+        <button class="nuevo-btn" onclick="window.location.replace='/menu/admin'">
             Menu
         </button>
 
@@ -108,6 +108,13 @@
 
 
     </div>
+
+    <script>
+        history.pushState(null, "", location.href);
+        window.onpopstate = function () {
+            history.pushState(null, "", location.href);
+        };
+    </script>
 
 </body>
 </html>
