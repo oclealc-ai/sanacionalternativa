@@ -458,6 +458,29 @@ def actualizar_usuario(id):
     return redirect("/admin/usuarios")
 
 
+@app.route("/admin/usuarios/eliminar/<int:id>", methods=["POST"])
+def eliminar_usuario(id):
+    
+    conexion = conectar_bd()
+    cursor = conexion.cursor(dictionary=True)
+    
+    cursor.execute("SELECT idUsuario FROM usuarios WHERE idUsuario=%s", (id,))
+    if not cursor.fetchone():
+        cursor.close()
+        conexion.close()
+        return redirect("/admin/usuarios")
+
+
+    cursor.execute("DELETE FROM usuarios WHERE idUsuario=%s", (id,))
+    conexion.commit()
+
+    cursor.close()
+    conexion.close()
+
+    return redirect("/admin/usuarios")
+
+
+
 @citas_admin_bp.route("/admin/cambiar_password", methods=["GET", "POST"])
 def cambiar_password():
     if "idUsuario" not in session:
