@@ -447,7 +447,7 @@ def actualizar_usuario(id):
     cursor = conexion.cursor(dictionary=True)
     
     cursor.execute("""
-        UPDATE Usuarios SET TipoUsuario=%s WHERE idUsuario=%s
+        UPDATE usuarios SET TipoUsuario=%s WHERE idUsuario=%s
     """, (TipoUsuario, id))
 
     conexion.commit()
