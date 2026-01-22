@@ -145,26 +145,17 @@ def login():
         )
         empresa_row = cursor.fetchone()
 
-        #session["RazonSocial"] = empresa_row[0] if empresa_row else ""
-        session["RazonSocial"] = empresa_row["RazonSocial"] if empresa_row else ""
-
-
-        log(f"empresa_row={empresa_row} tipo={type(empresa_row)}")
-
-        
-        cursor.close()
-        conn.close()
-        
         # Login correcto
         session["idUsuario"] = usuario_db["IdUsuario"]
         session["tipoUsuario"] = usuario_db["TipoUsuario"]
         session['Usuario'] = usuario_db['Usuario']      # username
         session['NombreUsuario'] = usuario_db['NombreUsuario']  # nombre completo        
         session["idEmpresa"] = usuario_db["idEmpresa"]
+        session["RazonSocial"] = empresa_row["RazonSocial"] if empresa_row else ""
 
-        log("SESSION: " + str(dict(session)))
-        log(f"LOGIN OK → Usuario:{usuario_input} Empresa:{empresa_id}")
-
+        cursor.close()
+        conn.close()
+        
         return jsonify({
             "mensaje": "Login correcto",
             "usuario": usuario_db["Usuario"],
