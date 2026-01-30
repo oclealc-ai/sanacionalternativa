@@ -27,8 +27,12 @@ WHATSAPP_URL = (
     else None
 )
 
-TWILIO_SID   = os.getenv("TWILIO_SID")
-TWILIO_TOKEN = os.getenv("TWILIO_TOKEN")
+#TWILIO_SID   = os.getenv("TWILIO_SID")
+#TWILIO_TOKEN = os.getenv("TWILIO_TOKEN")
+
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_API_KEY     = os.getenv("TWILIO_API_KEY")
+TWILIO_API_SECRET  = os.getenv("TWILIO_API_SECRET")
 TWILIO_PHONE = os.getenv("TWILIO_PHONE")
 
 URL_BASE = os.getenv("URL_BASE")

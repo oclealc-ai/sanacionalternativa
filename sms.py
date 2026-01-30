@@ -1,12 +1,22 @@
 # sms.py
 import random
 from twilio.rest import Client
-from config import TWILIO_SID, TWILIO_TOKEN, TWILIO_PHONE
+from config import (
+    TWILIO_ACCOUNT_SID,
+    TWILIO_API_KEY,
+    TWILIO_API_SECRET,
+    TWILIO_PHONE
+)
+
 
 def enviar_codigo_sms(telefono):
     codigo = str(random.randint(100000, 999999))
 
-    client = Client(TWILIO_SID, TWILIO_TOKEN)
+    client = Client(
+        TWILIO_API_KEY,
+        TWILIO_API_SECRET,
+        TWILIO_ACCOUNT_SID
+    )
 
     try:
         client.messages.create(
