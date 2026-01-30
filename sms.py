@@ -17,6 +17,15 @@ logger = logging.getLogger(__name__)
 def enviar_codigo_sms(telefono):
     codigo = str(random.randint(100000, 999999))
 
+    logger.warning("Entrando a enviar_codigo_sms")
+
+    logger.warning(f"TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}")
+    logger.warning(f"TWILIO_PHONE: {TWILIO_PHONE}")
+
+    if not all([TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_PHONE]):
+        logger.error("Variables de Twilio incompletas")
+        return None
+    
     client = Client(
         TWILIO_API_KEY,
         TWILIO_API_SECRET,
