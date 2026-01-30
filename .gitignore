@@ -8,6 +8,9 @@ venv/
 
 # Variables de entorno
 .env
+.env.*
+env.prod
+
 
 # Logs
 logs/
