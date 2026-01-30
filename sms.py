@@ -42,8 +42,8 @@ def enviar_codigo_sms(telefono):
             to=f"+52{telefono}"
         )
     
-    except Exception:
-        logger.exception("Error enviando SMS con Twilio")
+    except Exception as e:
+        logger.exception("Error SMS: %s", str(e))
         return None
 
     return codigo
