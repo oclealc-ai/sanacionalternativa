@@ -541,10 +541,16 @@ def cambiar_password():
 
 
 
+from werkzeug.exceptions import HTTPException
+
 @app.errorhandler(Exception)
 def handle_exception(e):
+    if isinstance(e, HTTPException):
+        return e  # deja pasar 404, 403, etc
+
     logger.exception("EXCEPCIÓN NO CONTROLADA")
     return "Error interno", 500
+
 
 
 # ============================================================
