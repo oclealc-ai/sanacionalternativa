@@ -12,22 +12,12 @@ from routes.citas_paciente      import citas_paciente_bp
 from routes.empresas            import empresas_bp
 
 import re
-import logging
 import os
 import mysql
+import logging
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-if not logger.handlers:
-    file_handler = logging.FileHandler("/home/appuser/apps/AppSanAlter/logs/app.log")
-    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-def log(msg):
-    logger.debug(msg)
-
 
 # ----------------------------------------
 # CONFIGURACIÓN DE FLASK
@@ -166,7 +156,7 @@ def login():
         }), 200
 
     except Exception as e:
-        log("ERROR LOGIN: " + str(e))
+        logger.exception("ERROR LOGIN: %s", e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -241,18 +231,17 @@ def frases_guardar():
     if "idUsuario" not in session:
         return redirect("/login/sistema")
     try:
-        log("Formulario recibido: " + str(request.form))
-
+        logger.info("Formulario recibido: %s", str(request.form))
         frase = request.form.get("frase", "")
         frase = frase.strip()
         empresa = session.get("idEmpresa")
         if not empresa:
-            log("Empresa no definida en sesión")
+            logger.info("Empresa no definida en sesión")
             return "Empresa no definida en sesión", 403
 
 
         if not frase:
-            log("Frase vacía")
+            logger.info("Frase vacía")
             return "La frase no puede estar vacía", 400
 
         #hoy = date.today()
@@ -271,15 +260,13 @@ def frases_guardar():
         cursor.close()
         conn.close()
 
-        log("Frase insertada correctamente")
+        logger.info("Frase insertada correctamente: %s", frase)    
 
         return redirect("/frases")
 
     except Exception as e:
-        log("ERROR AL GUARDAR FRASE: " + str(e))
+        logger.exception("ERROR AL GUARDAR FRASE: %s", str(e))
         return "Error interno al guardar la frase", 500
-
-
 
 # ---- EDITAR FRASE ----
 @app.route('/frases/editar')

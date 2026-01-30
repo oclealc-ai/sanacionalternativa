@@ -11,17 +11,20 @@ from config import (
     TWILIO_PHONE
 )
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("sms")
 
+print("🔥 SMS FUNCTION EJECUTADA 🔥")
 
 def enviar_codigo_sms(telefono):
     codigo = str(random.randint(100000, 999999))
 
-    logger.warning("Entrando a enviar_codigo_sms")
-
+    logger.info("Entrando a enviar_codigo_sms")
+    logger.warning(f"TWILIO_API_KEY: {TWILIO_API_KEY}")
+    logger.warning(f"TWILIO_API_SECRET: {TWILIO_API_SECRET}")   
     logger.warning(f"TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}")
     logger.warning(f"TWILIO_PHONE: {TWILIO_PHONE}")
-
+    
     if not all([TWILIO_ACCOUNT_SID, TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_PHONE]):
         logger.error("Variables de Twilio incompletas")
         return None
@@ -38,8 +41,9 @@ def enviar_codigo_sms(telefono):
             from_=TWILIO_PHONE,
             to=f"+52{telefono}"
         )
-    except Exception as e:
-        logger.debug("Error SMS: %s", e)
+    
+    except Exception:
+        logger.exception("Error enviando SMS con Twilio")
         return None
 
     return codigo
