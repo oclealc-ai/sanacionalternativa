@@ -1,12 +1,17 @@
 # sms.py
 import random
+import logging
+
 from twilio.rest import Client
+
 from config import (
     TWILIO_ACCOUNT_SID,
     TWILIO_API_KEY,
     TWILIO_API_SECRET,
     TWILIO_PHONE
 )
+
+logger = logging.getLogger(__name__)
 
 
 def enviar_codigo_sms(telefono):
@@ -25,7 +30,7 @@ def enviar_codigo_sms(telefono):
             to=f"+52{telefono}"
         )
     except Exception as e:
-        print("Error SMS:", e)
+        logger.debug("Error SMS: %s", e)
         return None
 
     return codigo

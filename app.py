@@ -1,10 +1,8 @@
 from flask                      import Flask, render_template, request, jsonify, session, redirect
-import mysql
 from werkzeug.security          import generate_password_hash, check_password_hash
+from werkzeug.exceptions        import HTTPException
 from datetime                   import date
-
 from database                   import conectar_bd
-
 from routes.codigos_telefono    import codigos_telefono_bp
 from routes.paciente            import paciente_bp
 from routes.verificar           import verificar_bp
@@ -16,8 +14,9 @@ from routes.empresas            import empresas_bp
 import re
 import logging
 import os
+import mysql
 
-logger = logging.getLogger("appsanalter")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 if not logger.handlers:
@@ -540,8 +539,6 @@ def cambiar_password():
     return render_template("cambiar_password.html")
 
 
-
-from werkzeug.exceptions import HTTPException
 
 @app.errorhandler(Exception)
 def handle_exception(e):
