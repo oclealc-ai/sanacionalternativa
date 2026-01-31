@@ -10,6 +10,7 @@ from routes.citas_admin         import citas_admin_bp
 from routes.ver_citas           import ver_citas_bp
 from routes.citas_paciente      import citas_paciente_bp
 from routes.empresas            import empresas_bp
+from routes.anuncios_paciente   import anuncios_paciente_bp
 
 import re
 import os
@@ -548,6 +549,7 @@ app.register_blueprint(citas_admin_bp)
 app.register_blueprint(ver_citas_bp)
 app.register_blueprint(citas_paciente_bp)
 app.register_blueprint(empresas_bp)
+app.register_blueprint(anuncios_paciente_bp)
 
 
 # ============================================================

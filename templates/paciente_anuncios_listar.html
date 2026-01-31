@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis anuncios</title>
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+</head>
+
+<body>
+<div class="container">
+
+    <h2>📢 Mis anuncios</h2>
+
+    <a href="/paciente/mis_anuncios/nuevo" class="btn">
+
+        ➕ Nuevo anuncio
+    </a>
+
+   <table>
+    <tr>
+        <th>Imagen</th>
+        <th>Descripción</th>
+        <th>URL</th>
+        <th>Vigencia</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+
+    {% for a in anuncios %}
+    <tr>
+        <td>
+            <img src="{{ a.Imagen }}" width="100">
+        </td>
+        <td>{{ a.Descripcion }}</td>
+        <td>{{ a.URLAnuncio }}</td>
+
+        <td>
+            {% if a.FechaInicioVigencia and a.FechaFinVigencia %}
+                {{ a.FechaInicioVigencia }}<br>
+                al<br>
+                {{ a.FechaFinVigencia }}
+            {% else %}
+                <em>No asignada</em>
+            {% endif %}
+        </td>
+
+        <td>
+            {% if a.FechaInicioVigencia and a.FechaFinVigencia %}
+                🟢 Activo
+            {% else %}
+                ⚪ Inactivo
+            {% endif %}
+        </td>
+
+        <td>
+            <a href="/paciente/anuncios/editar/{{ a.idAnuncio }}">✏️ Editar</a>
+            |
+            <a href="/paciente/anuncios/eliminar/{{ a.idAnuncio }}">🗑</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</div>
+</body>
+</html>

@@ -13,18 +13,18 @@ from config import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sms")
 
-print("🔥 SMS FUNCTION EJECUTADA 🔥")
+#print("🔥 SMS FUNCTION EJECUTADA 🔥")
 
 def enviar_codigo_sms(telefono):
     codigo = str(random.randint(100000, 999999))
 
-    logger.info("Entrando a enviar_codigo_sms")
-    logger.warning(f"TWILIO_AUTH_TOKEN: {TWILIO_AUTH_TOKEN}")   
-    logger.warning(f"TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}")
-    logger.warning(f"TWILIO_PHONE: {TWILIO_PHONE}")
+    #logger.info("Entrando a enviar_codigo_sms")
+    #logger.warning(f"TWILIO_AUTH_TOKEN: {TWILIO_AUTH_TOKEN}")   
+    #logger.warning(f"TWILIO_ACCOUNT_SID: {TWILIO_ACCOUNT_SID}")
+    #logger.warning(f"TWILIO_PHONE: {TWILIO_PHONE}")
     
     if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE]):
-        logger.error("Variables de Twilio incompletas")
+        #logger.error("Variables de Twilio incompletas")
         return None
     
     client = Client(
