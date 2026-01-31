@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Anuncio del Paciente</title>
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+
+    <style>
+        .form-container {
+            max-width: 520px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
+        .readonly {
+            background: #f0f0f0;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1em;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-container">
+    <h2>{{ 'Editar anuncio' if anuncio else 'Nuevo anuncio' }}</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <label>Imagen del anuncio</label>
+        <input type="file" name="imagen">
+
+        {% if anuncio and anuncio.Imagen %}
+            <p>
+                <img src="{{ anuncio.Imagen }}" style="max-width:100%; margin-top:10px;">
+            </p>
+        {% endif %}
+
+        <label>Descripción</label>
+        <textarea name="descripcion" rows="4" required>{{ anuncio.Descripcion if anuncio else '' }}</textarea>
+
+        <label>URL destino</label>
+        <input type="url" name="url" value="{{ anuncio.URLAnuncio if anuncio else '' }}" required>
+
+        <label>Fecha inicio vigencia</label>
+        <input type="date" class="readonly" readonly
+               value="{{ anuncio.FechaInicioVigencia if anuncio else '' }}">
+
+        <label>Fecha fin vigencia</label>
+        <input type="date" class="readonly" readonly
+               value="{{ anuncio.FechaFinVigencia if anuncio else '' }}">
+
+        <button type="submit">
+            💾 Guardar anuncio
+        </button>
+    </form>
+
+</div>
+
+</body>
+</html>
