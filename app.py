@@ -193,13 +193,45 @@ def menu_asistente():
     return render_template('menu_asistente.html', nombre=session.get('NombreUsuario'),empresa=session.get('RazonSocial'))
 
 
+# Que onda con esa ruta, porque es de paciente pero pregunta por el usuario? no encuentro otra para validar 
+# que el paciente esté logueado, porque no hay otro tipo de usuario que pueda iniciar sesión, entonces se 
+# asume que si hay un idUsuario en sesión, es un paciente. Luego vemos si es necesario agregar algo más para 
+# diferenciarlo, pero por ahora así funciona.
+
 @app.route('/menu/paciente')
 def menu_paciente():
+    logger.warning(f"Usuario en sesión en app.py /menu/paciente: {session}")
     if "idUsuario" not in session:
         return redirect("/login/sistema")
     return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'), empresa=session.get('RazonSocial'))
 #luego vemos la empresa en este menu de pacientes, para ver de donde llega el valor
 
+@app.route("/empresa/<int:idEmpresa>/paciente/login")
+def login_paciente_empresa(idEmpresa):
+
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute(
+        "SELECT RazonSocial FROM Empresa WHERE idEmpresa = %s",
+        (idEmpresa,)
+    )
+    empresa = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if not empresa:
+        return "Empresa no válida", 404
+
+    # Guardamos empresa en sesión
+    session["idEmpresa"] = idEmpresa
+    session["RazonSocial"] = empresa["RazonSocial"]
+
+    return render_template(
+        "login_paciente.html",
+        empresa=empresa["RazonSocial"]
+    )
 
 # ---- LISTAR FRASES ----
 @app.route('/frases')

@@ -8,16 +8,9 @@ import uuid
 
 paciente_bp = Blueprint("paciente", __name__, url_prefix="/paciente")
 
-# ============================================================
-# 1️⃣ PANTALLA INICIAL DE LOGIN DEL PACIENTE (solo muestra HTML)
-# ============================================================
-#@paciente_bp.route("/login", methods=["GET"])
-#def login_paciente_form():
-#    return render_template("login_paciente.html")
-
 
 # ============================================================
-# 2️⃣ RECIBE TELEFONO, VERIFICA SI EXISTE Y ENVÍA CÓDIGO
+# RECIBE TELEFONO, VERIFICA SI EXISTE Y ENVÍA CÓDIGO
 # ============================================================
 @paciente_bp.route("/auth/login_paciente", methods=["POST"])
 def login_paciente():
@@ -44,7 +37,7 @@ def login_paciente():
     # ENVIAR CÓDIGO WHATSAPP/SMS
     # codigo = enviar_codigo_whatsapp(telefono)
     
-    print("Canal seleccionado en paciente.py:", canal)
+    # print("Canal seleccionado en paciente.py:", canal)
     
     if canal == "whatsapp":
         codigo = enviar_codigo_whatsapp(telefono)
