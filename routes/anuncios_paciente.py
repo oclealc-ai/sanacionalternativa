@@ -11,7 +11,7 @@ anuncios_paciente_bp = Blueprint("anuncios_paciente", __name__)
 
 @anuncios_paciente_bp.route("/paciente/mis_anuncios")
 def mis_anuncios():
-    print("SESSION ACTUAL:", dict(session))
+    print("SESSION ACTUAL en /mis_anuncios: anuncios_paciente.py:", dict(session))
     if "idPaciente" not in session:
         return redirect("/login/paciente")
 
@@ -40,6 +40,7 @@ def mis_anuncios():
 
 @anuncios_paciente_bp.route("/paciente/anuncios/nuevo")
 def nuevo_anuncio():
+    print("SESSION ACTUAL en /anuncios/nuevo: anuncios_paciente.py:", dict(session))
     if "idPaciente" not in session:
         return redirect("/login/paciente")
 
