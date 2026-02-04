@@ -38,7 +38,6 @@ def mis_anuncios():
 
 @anuncios_paciente_bp.route("/paciente/anuncios/nuevo")
 def nuevo_anuncio():
-    print("SESSION ACTUAL en /anuncios/nuevo: anuncios_paciente.py:", dict(session))
     if "idPaciente" not in session:
         return redirect("/login/paciente")
 
@@ -49,6 +48,7 @@ def nuevo_anuncio():
 
 @anuncios_paciente_bp.route("/paciente/anuncios/guardar", methods=["POST"])
 def guardar_anuncio():
+    print("SESSION ACTUAL en /anuncios/guardar: anuncios_paciente.py:", dict(session))
     if "idPaciente" not in session:
         return redirect("/login/paciente")
 
