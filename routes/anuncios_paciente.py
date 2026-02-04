@@ -7,8 +7,6 @@ import os
 
 anuncios_paciente_bp = Blueprint("anuncios_paciente", __name__)
 
-
-
 @anuncios_paciente_bp.route("/paciente/mis_anuncios")
 def mis_anuncios():
     print("SESSION ACTUAL en /mis_anuncios: anuncios_paciente.py:", dict(session))

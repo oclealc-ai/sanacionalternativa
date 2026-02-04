@@ -46,7 +46,7 @@
 <div class="form-container">
     <h2>{{ 'Editar anuncio' if anuncio else 'Nuevo anuncio' }}</h2>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" action="/paciente/anuncios/guardar" enctype="multipart/form-data">
 
         <label>Imagen del anuncio</label>
         <input type="file" name="imagen">
