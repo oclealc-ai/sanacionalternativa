@@ -34,14 +34,14 @@
 <div class="container">
     
     <p style="text-align:center; color:#28a745; font-weight:bold;">
-        <br> Empresa: {{ empresa }}
+        <br> {{ empresa }}
     </p>
 
     <label for="telefono">📱 Ingresa tu número para recibir código:</label>
     <br> <br>
     <input type="tel" id="telefono" placeholder="Ejemplo: 8112345678" required>
         
-    <button onclick="enviarCodigo()">Enviar el código</button>
+    <button onclick="enviarCodigo()">Enviar código</button>
     
     <div id="cajaCodigo" style="display:none; margin-top:20px;">
         <h3>Validar Código</h3>
@@ -125,7 +125,7 @@ function enviarCodigo() {
         const err = data.error || "unknown";
         let msg = "Error enviando código.";
         if (err === "no_encontrado") {
-            window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
+            window.location.href = `/paciente/empresa/${idEmpresa}/alta?telefono=${telefono}`;
             return;
         }
         else if (err === "twilio_no_config") {
