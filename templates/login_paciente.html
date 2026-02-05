@@ -71,10 +71,20 @@ function enviarCodigo() {
     const urlParts = window.location.pathname.split("/");
     const idEmpresa = urlParts[2]; // posición 2 = idEmpresa
     
+    console.log("URL:", window.location.pathname);
+    console.log("URL Parts:", urlParts);
+    console.log("idEmpresa extraído:", idEmpresa);
+    console.log("Fetch a:", `/paciente/empresa/${idEmpresa}/auth/login`);
+    
     fetch(`/paciente/empresa/${idEmpresa}/auth/login`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({telefono, canal: "sms"})
+    })
+    .then(r => {
+        console.log("Response status:", r.status);
+        console.log("Content-Type:", r.headers.get('content-type'));
+        return r;
     })
     .then(async r => {
         // Manejar respuestas no-JSON (500 HTML) o JSON
@@ -88,7 +98,7 @@ function enviarCodigo() {
 
         // Si recibimos texto, mostrarlo directamente
         if (typeof data === 'string') {
-            mostrar("texto de data: " + data + " ----- urlParts: " + urlParts);
+            mostrar("Error del servidor: " + data);
             return;
         }
 
