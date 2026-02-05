@@ -57,9 +57,9 @@ def enviar_codigo():
     db = conectar_bd()
     cursor = db.cursor()
 
-    cursor.execute("DELETE FROM codigos_telefono WHERE telefono=%s", (telefono,))
+    cursor.execute("DELETE FROM codigos_telefono WHERE Telefono=%s", (telefono,))
     cursor.execute("""
-        INSERT INTO codigos_telefono (telefono, codigo, expiracion)
+        INSERT INTO codigos_telefono (Telefono, codigo, expiracion)
         VALUES (%s, %s, %s)
     """, (telefono, codigo, datetime.now() + timedelta(minutes=5)))
 

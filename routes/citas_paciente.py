@@ -6,18 +6,66 @@ from datetime import datetime
 citas_paciente_bp = Blueprint("citas_paciente", __name__)
 
 
-@citas_paciente_bp.route("/paciente/menu")
-def menu_principal_paciente():
+# ✅ NUEVA RUTA: con empresa en la URL
+@citas_paciente_bp.route("/empresa/<int:idEmpresa>/paciente/menu")
+def menu_principal_paciente_empresa(idEmpresa):
+    """Menú principal del paciente con empresa en la URL"""
+    # Validar que la sesión tenga el paciente y que la empresa coincida
+    if "idPaciente" not in session or session.get("idEmpresa") != idEmpresa:
+        return redirect(f"/empresa/{idEmpresa}/paciente/login")
+    
     return render_template(
         "menu_paciente.html",
         NombrePaciente=session.get("NombrePaciente", "Paciente"),
-        idPaciente=session.get("idPaciente"))
+        idPaciente=session.get("idPaciente"),
+        idEmpresa=idEmpresa)
+
+# 🔄 RUTA ANTIGUA: mantener por compatibilidad (redirige a la nueva)
+@citas_paciente_bp.route("/paciente/menu")
+def menu_principal_paciente():
+    """Ruta antigua - redirige a la nueva con empresa"""
+    idEmpresa = session.get("idEmpresa")
+    if not idEmpresa:
+        return redirect("/")  # O a una página de error
+    return redirect(f"/empresa/{idEmpresa}/paciente/menu")
     
         
     
 @citas_paciente_bp.route("/paciente/menu_citas")
 def menu_citas():
     return render_template("calendario_paciente.html")
+
+
+@citas_paciente_bp.route("/paciente/mis_citas")
+def mis_citas():
+    idPaciente = session.get("idPaciente")
+
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            c.idCita,
+            c.FechaCita,
+            c.HoraCita,
+            c.Estatus,
+            c.Para,
+            u.NombreUsuario AS NombreTerapeuta
+        FROM citas c
+        JOIN usuarios u ON u.Usuario = c.Terapeuta
+        WHERE c.idPaciente = %s
+          AND c.FechaCita >= CURDATE()
+          AND c.Estatus IN ('Reservada', 'Confirmada', 'Cancelada')
+        ORDER BY c.FechaCita, c.HoraCita
+    """, (idPaciente,))
+
+    citas = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("mis_citas.html", citas=citas)
+
 
 
 @citas_paciente_bp.route("/paciente/citas_disponibles")
@@ -134,37 +182,6 @@ def reservar_cita():
     # Si es reserva normal
     return render_template("reserva_exitosa.html")
 
-
-
-@citas_paciente_bp.route("/paciente/mis_citas")
-def mis_citas():
-    idPaciente = session.get("idPaciente")
-
-    conn = conectar_bd()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT
-            c.idCita,
-            c.FechaCita,
-            c.HoraCita,
-            c.Estatus,
-            c.Para,
-            u.NombreUsuario AS NombreTerapeuta
-        FROM citas c
-        JOIN usuarios u ON u.Usuario = c.Terapeuta
-        WHERE c.idPaciente = %s
-          AND c.FechaCita >= CURDATE()
-          AND c.Estatus IN ('Reservada', 'Confirmada', 'Cancelada')
-        ORDER BY c.FechaCita, c.HoraCita
-    """, (idPaciente,))
-
-    citas = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("mis_citas.html", citas=citas)
 
 # CONFIRMAR CITA. DESDE EL LISTADO DE MIS CITAS 
 @citas_paciente_bp.route("/paciente/confirmar")

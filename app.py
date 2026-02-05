@@ -84,12 +84,16 @@ def logout_paciente():
     return render_template('logout_paciente.html')
 
 @app.route('/paciente/alta')
-def alta_paciente():
+def alta_paciente_redirect():
+    """
+    Ruta antigua - redirige a la nueva con empresa.
+    Intenta usar idEmpresa de la sesión.
+    """
     telefono = request.args.get("telefono", "")
-    return render_template("alta_paciente.html", telefono=telefono)
+    idEmpresa = session.get("idEmpresa", 1)  # Defecto a empresa 1
+    return redirect(f"/empresa/{idEmpresa}/paciente/alta?telefono={telefono}")
 
 
-# ============================================================
 #   LOGIN DE USUARIOS DEL SISTEMA 
 # ============================================================
 
@@ -193,22 +197,20 @@ def menu_asistente():
     return render_template('menu_asistente.html', nombre=session.get('NombreUsuario'),empresa=session.get('RazonSocial'))
 
 
-# Que onda con esa ruta, porque es de paciente pero pregunta por el usuario? no encuentro otra para validar 
-# que el paciente esté logueado, porque no hay otro tipo de usuario que pueda iniciar sesión, entonces se 
-# asume que si hay un idUsuario en sesión, es un paciente. Luego vemos si es necesario agregar algo más para 
-# diferenciarlo, pero por ahora así funciona.
+#@app.route('/menu/paciente')
+#def menu_paciente():
+#    logger.warning(f"Usuario en sesión en app.py /menu/paciente: {session}")
+#    if "idUsuario" not in session:
+#        return redirect("/login/sistema")
+#    return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'), empresa=session.get('RazonSocial'))
 
-@app.route('/menu/paciente')
-def menu_paciente():
-    logger.warning(f"Usuario en sesión en app.py /menu/paciente: {session}")
-    if "idUsuario" not in session:
-        return redirect("/login/sistema")
-    return render_template('menu_paciente.html', nombre=session.get('NombreUsuario'), empresa=session.get('RazonSocial'))
-#luego vemos la empresa en este menu de pacientes, para ver de donde llega el valor
 
 @app.route("/empresa/<int:idEmpresa>/paciente/login")
 def login_paciente_empresa(idEmpresa):
-
+    """
+    Página de login para pacientes de una empresa específica.
+    La empresa viene en la URL, no la elige el paciente.
+    """
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
@@ -224,7 +226,7 @@ def login_paciente_empresa(idEmpresa):
     if not empresa:
         return "Empresa no válida", 404
 
-    # Guardamos empresa en sesión
+    # Guardamos empresa en sesión (temporal, hasta que se autentique)
     session["idEmpresa"] = idEmpresa
     session["RazonSocial"] = empresa["RazonSocial"]
 

@@ -34,10 +34,11 @@
 <div class="container">
     
     <h2 style="text-align:center;">
-        Acceso de Paciente
+        Acceso de Paciente 📲
     </h2>
 
     <p style="text-align:center; color:#28a745; font-weight:bold;">
+        Empresa <br>
         {{ empresa }}
     </p>
 
@@ -70,52 +71,67 @@ function enviarCodigo() {
         return;
     }
 
-    fetch("/enviar_codigo", {
+    // Obtener la empresa de la URL: /empresa/<id>/paciente/login
+    const urlParts = window.location.pathname.split("/");
+    const idEmpresa = urlParts[2]; // posición 2 = idEmpresa
+
+    fetch(`/paciente/empresa/${idEmpresa}/auth/login`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({telefono, modo: "login"})
+        body: JSON.stringify({telefono, canal: "sms"})
     })
     .then(r => r.json())
     .then(data => {
 
-        if (data.status === "ok") {
+        if (data.message === "Código enviado") {
             document.getElementById("cajaCodigo").style.display = "block";
             mostrar("Código enviado por SMS. Revisa tu teléfono.", false);
             
             // Guardamos temporalmente el número
             sessionStorage.setItem("telefono_login", telefono);
+            sessionStorage.setItem("idEmpresa_login", idEmpresa);
         }
-        else if (data.status === "no_encontrado") {
+        else if (data.error === "no_encontrado") {
             // 🔥 Si el teléfono NO existe, vamos al alta de paciente
-            window.location.href = "/paciente/alta?telefono=" + telefono;
+            window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
         }
         else {
-            mostrar("Error enviando código.");
+            mostrar("Error: " + (data.error || "Desconocido"));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        mostrar("Error enviando código.");
     });
 }
 
 function validarCodigo() {
     let codigo = document.getElementById("codigo").value.trim();
     let telefono = sessionStorage.getItem("telefono_login");
+    let idEmpresa = sessionStorage.getItem("idEmpresa_login");
 
     if (!codigo || codigo.length !== 6) {
         mostrar("Código inválido");
         return;
     }
 
-    fetch("/paciente/validar_codigo", {
+    fetch("/paciente/validar_codigo_empresa", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({telefono, codigo})
+        body: JSON.stringify({telefono, codigo, idEmpresa})
     })
     .then(r => r.json())
     .then(data => {
         if (data.ok) {
-            window.location.href = "/paciente/menu";  // ⬅️ ENTRAR AL MENÚ
+            // Redirigir al menú del paciente de esta empresa
+            window.location.href = `/empresa/${idEmpresa}/paciente/menu`;
         } else {
             mostrar("Código incorrecto o expirado.");
         }
+    })
+    .catch(err => {
+        console.error(err);
+        mostrar("Error validando código.");
     });
 }
 
