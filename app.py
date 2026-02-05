@@ -76,7 +76,21 @@ def logout_admin():
 
 @app.route('/login/paciente')
 def login_paciente():
-    return render_template('login_paciente.html')
+    """
+    Ruta compatible para login de pacientes.
+    Acepta ?empresa=X como parámetro query.
+    Ejemplo: /login/paciente?empresa=1 o /login/paciente?empresa=15
+    """
+    empresa_id = request.args.get("empresa", "0")  # Defecto a empresa 0
+    if empresa_id == "0":
+        return "Empresa no especificada. Usa ?empresa=X en la URL.", 400
+    try:
+        empresa_id = int(empresa_id)
+    except ValueError:
+        return "ID de empresa inválido", 400
+    
+    # Redirigir a la ruta nueva con el ID dinámico
+    return redirect(f"/empresa/{empresa_id}/paciente/login")
 
 @app.route('/logout/paciente')
 def logout_paciente():

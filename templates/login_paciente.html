@@ -67,12 +67,21 @@ function enviarCodigo() {
         return;
     }
 
-    // Obtener la empresa de la URL: /empresa/<id>/paciente/login
-    const urlParts = window.location.pathname.split("/");
-    const idEmpresa = urlParts[2]; // posición 2 = idEmpresa
+    let idEmpresa = null;
     
-    console.log("URL:", window.location.pathname);
-    console.log("URL Parts:", urlParts);
+    // Intentar extraer de la ruta
+    const urlParts = window.location.pathname.split("/");
+    if (urlParts.length >= 3 && urlParts[1] === "empresa") {
+        idEmpresa = urlParts[2];
+    }
+    
+    // Si no lo encontró, intentar del query parameter
+    if (!idEmpresa) {
+        const params = new URLSearchParams(window.location.search);
+        idEmpresa = params.get("empresa") || "1"; // Default a 1
+    }
+    
+    console.log("URL:", window.location.href);
     console.log("idEmpresa extraído:", idEmpresa);
     console.log("Fetch a:", `/paciente/empresa/${idEmpresa}/auth/login`);
     
