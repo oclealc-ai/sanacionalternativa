@@ -42,9 +42,10 @@ def generar_citas():
         hoy = datetime.now()
         anio, mes_num = map(int, mes.split("-"))
 
-        if anio < hoy.year or (anio == hoy.year and mes_num <= hoy.month):
+        # permitir el mes actual (solo las fechas restantes), pero bloquear meses pasados
+        if anio < hoy.year or (anio == hoy.year and mes_num < hoy.month):
             return render_template("generar_citas.html",
-                                   mensaje="❌ Debes seleccionar un mes futuro.",
+                                   mensaje="❌ Debes seleccionar un mes futuro o el mes actual.",
                                    tipo="error",
                                    terapeutas=terapeutas)
 
@@ -56,7 +57,11 @@ def generar_citas():
         h_inicio = datetime.strptime(hora_inicio, "%H:%M")
         h_fin = datetime.strptime(hora_fin, "%H:%M")
 
-        dia = primer_dia
+        # si el usuario solicita el mes actual, comenzar desde el día de hoy
+        if anio == hoy.year and mes_num == hoy.month:
+            dia = datetime(hoy.year, hoy.month, hoy.day)
+        else:
+            dia = primer_dia
         while dia <= ultimo_dia:
             if dia.weekday() < 5:
                 hora_actual = h_inicio
