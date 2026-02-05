@@ -22,72 +22,90 @@ def login_paciente_empresa(idEmpresa):
     Login de paciente validando que el teléfono existe en ESA empresa específica.
     La empresa viene en la URL, no la elige el paciente.
     """
-    data = request.get_json()
-    telefono = data.get("telefono")
-    canal = data.get("canal", "sms")  # canal puede ser: "whatsapp" o "sms"
+    try:
+        data = request.get_json()
+        telefono = data.get("telefono")
+        canal = data.get("canal", "sms")  # canal puede ser: "whatsapp" o "sms"
 
-    if not telefono:
-        return jsonify({"error": "Teléfono requerido"}), 400
+        if not telefono:
+            return jsonify({"error": "Teléfono requerido"}), 400
 
-    conn = conectar_bd()
-    cursor = conn.cursor(dictionary=True) 
+        conn = conectar_bd()
+        cursor = conn.cursor(dictionary=True) 
 
-    # ✅ Validar que la empresa existe
-    cursor.execute("SELECT idEmpresa FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
-    if not cursor.fetchone():
-        cursor.close()
-        conn.close()
-        return jsonify({"error": "Empresa no válida"}), 404
+        # ✅ Validar que la empresa existe
+        cursor.execute("SELECT idEmpresa FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
+        if not cursor.fetchone():
+            cursor.close()
+            conn.close()
+            return jsonify({"error": "Empresa no válida"}), 404
 
-    # ✅ Buscar el paciente en esa empresa específica
-    cursor.execute("""
-        SELECT idPaciente, NombrePaciente 
-        FROM paciente 
-        WHERE Telefono=%s AND idEmpresa=%s
-    """, (telefono, idEmpresa))
-    paciente = cursor.fetchone()
+        # ✅ Buscar el paciente en esa empresa específica
+        cursor.execute("""
+            SELECT idPaciente, NombrePaciente 
+            FROM paciente 
+            WHERE Telefono=%s AND idEmpresa=%s
+        """, (telefono, idEmpresa))
+        paciente = cursor.fetchone()
 
-    if not paciente:
-        cursor.close()
-        conn.close()
-        # Si no existe en esta empresa, ofrecer registrarse
-        return jsonify({"error": "no_encontrado"}), 404
+        if not paciente:
+            cursor.close()
+            conn.close()
+            # Si no existe en esta empresa, ofrecer registrarse
+            return jsonify({"error": "no_encontrado"}), 404
 
-    # ✅ Enviar código por el canal elegido
-    if canal == "whatsapp":
-        codigo = enviar_codigo_whatsapp(telefono)
-    else:
-        codigo = enviar_codigo_sms(telefono)
-
-    if not codigo:
-        # Diagnóstico: determinar posible causa y registrar
-        if canal == "sms":
-            if not all([config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN, config.TWILIO_PHONE]):
-                reason = "twilio_no_config"
+        # ✅ Enviar código por el canal elegido (controlar excepciones externas)
+        try:
+            if canal == "whatsapp":
+                codigo = enviar_codigo_whatsapp(telefono)
             else:
-                reason = "sms_send_error"
-        else:
-            if not config.WHATSAPP_TOKEN or not config.WHATSAPP_URL:
-                reason = "whatsapp_no_config"
-            else:
-                reason = "whatsapp_send_error"
+                codigo = enviar_codigo_sms(telefono)
+        except Exception:
+            logger.exception("Excepción enviando código (empresa=%s, telefono=%s, canal=%s)", idEmpresa, telefono, canal)
+            codigo = None
 
-        logger.error("No se pudo generar el código de verificación (empresa=%s, telefono=%s, canal=%s): %s",
-                     idEmpresa, telefono, canal, reason)
+        if not codigo:
+            # Diagnóstico: determinar posible causa y registrar
+            if canal == "sms":
+                if not all([config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN, config.TWILIO_PHONE]):
+                    reason = "twilio_no_config"
+                else:
+                    reason = "sms_send_error"
+            else:
+                if not config.WHATSAPP_TOKEN or not config.WHATSAPP_URL:
+                    reason = "whatsapp_no_config"
+                else:
+                    reason = "whatsapp_send_error"
+
+            logger.error("No se pudo generar el código de verificación (empresa=%s, telefono=%s, canal=%s): %s",
+                         idEmpresa, telefono, canal, reason)
+
+            cursor.close()
+            conn.close()
+            return jsonify({"error": reason}), 500
+
+        # Guardamos en sesión: teléfono, empresa e ID de paciente (temporal)
+        session['telefono_temp'] = telefono
+        session['idEmpresa_temp'] = idEmpresa
+        session['idPaciente_temp'] = paciente['idPaciente']
 
         cursor.close()
         conn.close()
-        return jsonify({"error": reason}), 500
-    
-    # Guardamos en sesión: teléfono, empresa e ID de paciente (temporal)
-    session['telefono_temp'] = telefono
-    session['idEmpresa_temp'] = idEmpresa
-    session['idPaciente_temp'] = paciente['idPaciente']
 
-    cursor.close()
-    conn.close()
+        return jsonify({"message": "Código enviado"}), 200
 
-    return jsonify({"message": "Código enviado"}), 200
+    except Exception as e:
+        logger.exception("ERROR no controlado en login_paciente_empresa: %s", e)
+        # Intentamos cerrar conexión si existe
+        try:
+            cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return jsonify({"error": "server_exception"}), 500
 
 
 # ============================================================

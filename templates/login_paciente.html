@@ -33,16 +33,12 @@
 
 <div class="container">
     
-    <h2 style="text-align:center;">
-        Acceso de Paciente 📲
-    </h2>
-
     <p style="text-align:center; color:#28a745; font-weight:bold;">
-        Empresa <br>
-        {{ empresa }}
+        <br> Empresa: {{ empresa }}
     </p>
 
     <label for="telefono">📱 Ingresa tu número para recibir código:</label>
+    <br> <br>
     <input type="tel" id="telefono" placeholder="Ejemplo: 8112345678" required>
         
     <button onclick="enviarCodigo()">Enviar el código</button>
@@ -74,14 +70,29 @@ function enviarCodigo() {
     // Obtener la empresa de la URL: /empresa/<id>/paciente/login
     const urlParts = window.location.pathname.split("/");
     const idEmpresa = urlParts[2]; // posición 2 = idEmpresa
-
+    
+    mostrar("idEmpresa: " + idEmpresa, false); // solo para debug
+    
     fetch(`/paciente/empresa/${idEmpresa}/auth/login`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({telefono, canal: "sms"})
     })
-    .then(r => r.json())
-    .then(data => {
+    .then(async r => {
+        // Manejar respuestas no-JSON (500 HTML) o JSON
+        let data;
+        const ct = r.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+            data = await r.json();
+        } else {
+            data = await r.text();
+        }
+
+        // Si recibimos texto, mostrarlo directamente
+        if (typeof data === 'string') {
+            mostrar(data);
+            return;
+        }
 
         if (data.message === "Código enviado") {
             document.getElementById("cajaCodigo").style.display = "block";
@@ -90,38 +101,35 @@ function enviarCodigo() {
             // Guardamos temporalmente el número
             sessionStorage.setItem("telefono_login", telefono);
             sessionStorage.setItem("idEmpresa_login", idEmpresa);
+            return;
         }
-        else if (data.error === "no_encontrado") {
-            // 🔥 Si el teléfono NO existe, vamos al alta de paciente
-            window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
-        }
-        else {
-            // Mapear códigos de error del backend a mensajes amigables
-            const err = data.error || "unknown";
-            let msg = "Error enviando código.";
-            if (err === "no_encontrado") {
-                window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
-                return;
-            }
-            else if (err === "twilio_no_config") {
-                msg = "Servicio SMS no configurado. Contacta al administrador.";
-            }
-            else if (err === "sms_send_error") {
-                msg = "No se pudo enviar el SMS. Intenta más tarde.";
-            }
-            else if (err === "whatsapp_no_config") {
-                msg = "Servicio WhatsApp no configurado. Contacta al administrador.";
-            }
-            else if (err === "whatsapp_send_error") {
-                msg = "No se pudo enviar el mensaje por WhatsApp. Intenta más tarde.";
-            }
-            else if (err === "unknown") {
-                msg = "Error desconocido al enviar código.";
-            }
 
-            mostrar(msg);
+        // Mapear códigos de error del backend a mensajes amigables
+        const err = data.error || "unknown";
+        let msg = "Error enviando código.";
+        if (err === "no_encontrado") {
+            window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
+            return;
         }
+        else if (err === "twilio_no_config") {
+            msg = "Servicio SMS no configurado. Contacta al administrador.";
+        }
+        else if (err === "sms_send_error") {
+            msg = "No se pudo enviar el SMS. Intenta más tarde.";
+        }
+        else if (err === "whatsapp_no_config") {
+            msg = "Servicio WhatsApp no configurado. Contacta al administrador.";
+        }
+        else if (err === "whatsapp_send_error") {
+            msg = "No se pudo enviar el mensaje por WhatsApp. Intenta más tarde.";
+        }
+        else if (err === "server_exception") {
+            msg = "Error interno del servidor. Contacta al administrador.";
+        }
+
+        mostrar(msg);
     })
+    
     .catch(err => {
         console.error(err);
         mostrar("Error enviando código.");
