@@ -97,9 +97,9 @@ def generar_citas():
                         continue
 
                     cursor.execute("""
-                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (id_terapeuta, dia.date(), hora_actual.time(), 'Disponible', None, None, '', intervalo, id_empresa))
+                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa, Empresa)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (id_terapeuta, dia.date(), hora_actual.time(), 'Disponible', None, None, '', intervalo, id_empresa, id_empresa))
                     
                     total_creadas += 1
                     hora_actual += timedelta(minutes=intervalo)

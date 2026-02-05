@@ -189,7 +189,7 @@ def validar_codigo_empresa():
 # ============================================================
 # ALTA DEL PACIENTE (Registro en una empresa específica)
 # ============================================================
-@paciente_bp.route("/empresa/<int:idEmpresa>/alta", methods=["GET", "POST"])
+@paciente_bp.route("/empresa/<int:idEmpresa>/paciente/alta", methods=["GET", "POST"])
 def alta_paciente_empresa(idEmpresa):
     """
     Registro de paciente nuevo en una empresa específica.
