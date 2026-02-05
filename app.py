@@ -81,12 +81,14 @@ def login_paciente():
     Acepta ?empresa=X como parámetro query.
     Ejemplo: /login/paciente?empresa=1 o /login/paciente?empresa=15
     """
-    empresa_id = request.args.get("empresa", "0")  # Defecto a empresa 0
-    return "empresa_id: " + empresa_id, 400
+    empresa_id_raw = request.args.get("empresa", "1")  # Defecto a empresa 1
+    logger.info("/login/paciente request.args=%s query_string=%s", request.args, request.query_string)
 
-    if empresa_id == "0":
-        return "Empresa no especificada. Usa ?empresa=X en la URL.", 400
     try:
+        empresa_id = int(empresa_id_raw)
+    except Exception as ex:
+        logger.exception("Valor de empresa inválido: %s", empresa_id_raw)
+        return f"ID de empresa inválido: {empresa_id_raw}", 400
         empresa_id = int(empresa_id)
     except ValueError:
         return "ID de empresa inválido", 400
