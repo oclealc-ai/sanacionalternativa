@@ -31,6 +31,7 @@ def generar_citas():
     # -----------------------------
     
     usuario = session.get("Usuario", None)  # usuario que generó la cita
+    id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
     
     if request.method == "POST":
         id_terapeuta = request.form.get("terapeuta")
@@ -93,9 +94,9 @@ def generar_citas():
                         continue
 
                     cursor.execute("""
-                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion)
-                        VALUES (%s, %s, %s, 'Disponible', NULL, NULL, '', %s)
-                    """, (id_terapeuta, dia.date(), hora_actual.time(),intervalo))
+                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa)
+                        VALUES (%s, %s, %s, 'Disponible', NULL, NULL, '', %s, %s)
+                    """, (id_terapeuta, dia.date(), hora_actual.time(), intervalo, id_empresa))
                     
                     total_creadas += 1
                     hora_actual += timedelta(minutes=intervalo)
