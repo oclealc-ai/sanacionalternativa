@@ -1,11 +1,12 @@
 from flask import Blueprint, request, render_template, jsonify, session
 from database import conectar_bd
 from datetime import datetime, timedelta
-
+import logging
 import calendar
 
-citas_admin_bp = Blueprint("citas_admin", __name__)
+logger = logging.getLogger(__name__)
 
+citas_admin_bp = Blueprint("citas_admin", __name__)
     
 # ------------------------------------------------------------
 # GENERAR CITAS
@@ -32,6 +33,8 @@ def generar_citas():
     
     usuario = session.get("Usuario", None)  # usuario que generó la cita
     id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
+    
+    logger.warning(f"id_empresa: {id_empresa}")
     
     if request.method == "POST":
         id_terapeuta = request.form.get("terapeuta")
