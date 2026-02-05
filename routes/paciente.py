@@ -3,7 +3,7 @@ from database import conectar_bd
 from correo   import enviar_correo
 from whatsapp import enviar_codigo_whatsapp
 from sms      import enviar_codigo_sms
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import logging
 import config
@@ -63,6 +63,20 @@ def login_paciente_empresa(idEmpresa):
         except Exception:
             logger.exception("Excepción enviando código (empresa=%s, telefono=%s, canal=%s)", idEmpresa, telefono, canal)
             codigo = None
+
+        # Si se generó un código, guardarlo en la tabla codigos_telefono con expiración
+        if codigo:
+            try:
+                # usamos la misma conexión
+                cursor.execute("DELETE FROM codigos_telefono WHERE Telefono=%s", (telefono,))
+                expiracion = datetime.now() + timedelta(minutes=5)
+                cursor.execute("""
+                    INSERT INTO codigos_telefono (Telefono, codigo, expiracion)
+                    VALUES (%s, %s, %s)
+                """, (telefono, codigo, expiracion))
+                conn.commit()
+            except Exception:
+                logger.exception("Error al guardar codigo en codigos_telefono para %s", telefono)
 
         if not codigo:
             # Diagnóstico: determinar posible causa y registrar
