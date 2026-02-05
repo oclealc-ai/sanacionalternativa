@@ -5,6 +5,10 @@ from whatsapp import enviar_codigo_whatsapp
 from sms      import enviar_codigo_sms
 from datetime import datetime
 import uuid
+import logging
+import config
+
+logger = logging.getLogger(__name__)
 
 paciente_bp = Blueprint("paciente", __name__, url_prefix="/paciente")
 
@@ -56,9 +60,24 @@ def login_paciente_empresa(idEmpresa):
         codigo = enviar_codigo_sms(telefono)
 
     if not codigo:
+        # Diagnóstico: determinar posible causa y registrar
+        if canal == "sms":
+            if not all([config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN, config.TWILIO_PHONE]):
+                reason = "twilio_no_config"
+            else:
+                reason = "sms_send_error"
+        else:
+            if not config.WHATSAPP_TOKEN or not config.WHATSAPP_URL:
+                reason = "whatsapp_no_config"
+            else:
+                reason = "whatsapp_send_error"
+
+        logger.error("No se pudo generar el código de verificación (empresa=%s, telefono=%s, canal=%s): %s",
+                     idEmpresa, telefono, canal, reason)
+
         cursor.close()
         conn.close()
-        return jsonify({"error": "Error enviando código"}), 500
+        return jsonify({"error": reason}), 500
     
     # Guardamos en sesión: teléfono, empresa e ID de paciente (temporal)
     session['telefono_temp'] = telefono

@@ -96,7 +96,30 @@ function enviarCodigo() {
             window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
         }
         else {
-            mostrar("Error: " + (data.error || "Desconocido"));
+            // Mapear códigos de error del backend a mensajes amigables
+            const err = data.error || "unknown";
+            let msg = "Error enviando código.";
+            if (err === "no_encontrado") {
+                window.location.href = `/empresa/${idEmpresa}/paciente/alta?telefono=${telefono}`;
+                return;
+            }
+            else if (err === "twilio_no_config") {
+                msg = "Servicio SMS no configurado. Contacta al administrador.";
+            }
+            else if (err === "sms_send_error") {
+                msg = "No se pudo enviar el SMS. Intenta más tarde.";
+            }
+            else if (err === "whatsapp_no_config") {
+                msg = "Servicio WhatsApp no configurado. Contacta al administrador.";
+            }
+            else if (err === "whatsapp_send_error") {
+                msg = "No se pudo enviar el mensaje por WhatsApp. Intenta más tarde.";
+            }
+            else if (err === "unknown") {
+                msg = "Error desconocido al enviar código.";
+            }
+
+            mostrar(msg);
         }
     })
     .catch(err => {
