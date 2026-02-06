@@ -76,11 +76,6 @@ def logout_admin():
 
 @app.route('/login/paciente')
 def login_paciente():
-    """
-    Ruta compatible para login de pacientes.
-    Acepta ?empresa=X como parámetro query.
-    Ejemplo: /login/paciente?empresa=1 o /login/paciente?empresa=15
-    """
     empresa_id_raw = request.args.get("empresa", "1")  # Defecto a empresa 1
     logger.info("/login/paciente request.args=%s query_string=%s", request.args, request.query_string)
 
@@ -103,10 +98,6 @@ def logout_paciente():
 
 @app.route('/paciente/alta')
 def alta_paciente_redirect():
-    """
-    Ruta antigua - redirige a la nueva con empresa.
-    Intenta usar idEmpresa de la sesión.
-    """
     telefono = request.args.get("telefono", "")
     idEmpresa = session.get("idEmpresa", 1)  # Defecto a empresa 1
     return redirect(f"/empresa/{idEmpresa}/paciente/alta?telefono={telefono}")

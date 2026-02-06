@@ -5,7 +5,7 @@ logging.basicConfig(level=logging.WARNING)
 from flask    import Blueprint, request, jsonify
 from database import conectar_bd
 from whatsapp import enviar_codigo_whatsapp
-from sms      import enviar_codigo_sms
+from sms_mx   import enviar_codigo_sms
 
 from datetime import datetime, timedelta
 
