@@ -14,11 +14,22 @@ def menu_principal_paciente_empresa(idEmpresa):
     if "idPaciente" not in session or session.get("idEmpresa") != idEmpresa:
         return redirect(f"/empresa/{idEmpresa}/paciente/login")
     
+    # Obtener el nombre de la empresa de la BD
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
+    empresa_row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
+    
     return render_template(
         "menu_paciente.html",
         NombrePaciente=session.get("NombrePaciente", "Paciente"),
         idPaciente=session.get("idPaciente"),
-        idEmpresa=idEmpresa)
+        idEmpresa=idEmpresa,
+        empresa=empresa_nombre)
 
 # 🔄 RUTA ANTIGUA: mantener por compatibilidad (redirige a la nueva)
 @citas_paciente_bp.route("/paciente/menu")
