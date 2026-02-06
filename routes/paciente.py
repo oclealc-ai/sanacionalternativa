@@ -2,7 +2,7 @@ from flask    import Blueprint, render_template, request, jsonify, session, redi
 from database import conectar_bd
 from correo   import enviar_correo
 from whatsapp import enviar_codigo_whatsapp
-from sms      import enviar_codigo_sms
+from sms_mx   import enviar_codigo_sms
 from datetime import datetime, timedelta
 import uuid
 import logging
