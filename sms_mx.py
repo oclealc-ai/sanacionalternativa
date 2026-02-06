@@ -29,7 +29,11 @@ def enviar_codigo_sms(telefono):
 
     payload = {
         "to": [f"52{telefono}"],
-        "message": f"Tu código de acceso es: {codigo}. Válido por 5 minutos."
+        "message": (
+            f"Mensaje de Sanacion Alternativa"
+            "Tu codigo de acceso es: {codigo}\n"
+            "Valido por 5 minutos."
+        )
     }
 
     # senderId solo si lo tienes aprobado
@@ -49,11 +53,11 @@ def enviar_codigo_sms(telefono):
             timeout=10
         )
 
-        if response.status_code != 200:
+        if not response.ok:
             logger.error("Altiria HTTP error %s: %s",
-                         response.status_code, response.text)
+                        response.status_code, response.text)
             return None
-
+    
     except Exception as e:
         logger.exception("Error enviando SMS MX")
         return None
