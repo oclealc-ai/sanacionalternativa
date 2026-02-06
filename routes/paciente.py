@@ -84,8 +84,8 @@ def login_paciente_empresa(idEmpresa):
         if not codigo:
             # Diagnóstico: determinar posible causa y registrar
             if canal == "sms":
-                if not all([config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN, config.TWILIO_PHONE]):
-                    reason = "twilio_no_config"
+                if not all([config.ALTIRIA_LOGIN, config.ALTIRIA_PASSWORD, config.ALTIRIA_SENDER_ID]):
+                    reason = "altiria_no_config"
                 else:
                     reason = "sms_send_error"
             else:
@@ -93,7 +93,7 @@ def login_paciente_empresa(idEmpresa):
                     reason = "whatsapp_no_config"
                 else:
                     reason = "whatsapp_send_error"
-            logger.error(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN, config.TWILIO_PHONE)
+            
             logger.error("No se pudo generar el código de verificación (empresa=%s, telefono=%s, canal=%s): %s",
                          idEmpresa, telefono, canal, reason)
 

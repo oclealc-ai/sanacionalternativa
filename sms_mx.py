@@ -1,4 +1,5 @@
 # sms_mx.py
+from logging import config
 import random
 import logging
 import requests
@@ -22,6 +23,8 @@ def enviar_codigo_sms(telefono):
 
     codigo = str(random.randint(100000, 999999))
 
+    logger.error([config.ALTIRIA_LOGIN, config.ALTIRIA_PASSWORD, config.ALTIRIA_SENDER_ID])
+    
     if not all([ALTIRIA_LOGIN, ALTIRIA_PASSWORD, ALTIRIA_SENDER_ID]):
         logger.error("Credenciales Altiria incompletas")
         return None
