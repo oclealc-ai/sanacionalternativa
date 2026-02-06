@@ -30,9 +30,9 @@ def enviar_codigo_sms(telefono):
     payload = {
         "to": [f"52{telefono}"],
         "message": (
-            f"Mensaje de Sanacion Alternativa"
-            "Tu codigo de acceso es: {codigo}\n"
-            "Valido por 5 minutos."
+            f"-Sanacion Alternativa- \n"
+            f"Tu codigo de acceso es: {codigo} \n"
+            f"Valido por 5 minutos."
         )
     }
 
