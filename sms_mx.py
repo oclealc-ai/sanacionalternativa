@@ -1,7 +1,7 @@
 # sms_mx.py
-from logging import config
 import random
 import logging
+import base64
 import requests
 
 from config import (
@@ -23,11 +23,18 @@ def enviar_codigo_sms(telefono):
 
     codigo = str(random.randint(100000, 999999))
 
-    logger.error("login: %s password: %s senderId: %s", ALTIRIA_LOGIN,ALTIRIA_PASSWORD,ALTIRIA_SENDER_ID)
-    
     if not all([ALTIRIA_LOGIN, ALTIRIA_PASSWORD, ALTIRIA_SENDER_ID]):
         logger.error("Credenciales Altiria incompletas")
         return None
+
+    # 🔐 BASIC AUTH (CLAVE DEL PROBLEMA)
+    auth_raw = f"{ALTIRIA_LOGIN}:{ALTIRIA_PASSWORD}"
+    auth_b64 = base64.b64encode(auth_raw.encode()).decode()
+
+    headers = {
+        "Authorization": f"Basic {auth_b64}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
 
     mensaje = (
         f"{ALTIRIA_SENDER_ID}\n"
@@ -37,8 +44,6 @@ def enviar_codigo_sms(telefono):
 
     payload = {
         "cmd": "sendSMS",
-        "login": ALTIRIA_LOGIN,
-        "passwd": ALTIRIA_PASSWORD,
         "dest": f"52{telefono}",
         "msg": mensaje,
         "senderId": ALTIRIA_SENDER_ID
@@ -47,6 +52,7 @@ def enviar_codigo_sms(telefono):
     try:
         response = requests.post(
             ALTIRIA_URL,
+            headers=headers,
             data=payload,
             timeout=10
         )
@@ -58,7 +64,7 @@ def enviar_codigo_sms(telefono):
             return None
 
     except Exception as e:
-        logger.exception("Error enviando SMS MX: %s", str(e))
+        logger.exception("Error enviando SMS MX")
         return None
 
     return codigo
