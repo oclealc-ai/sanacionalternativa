@@ -54,7 +54,7 @@ def login_paciente_empresa(idEmpresa):
             # Si no existe en esta empresa, ofrecer registrarse
             return jsonify({"error": "no_encontrado"}), 404
 
-        if telefono == "8110646050":
+        if telefono == "1234567890":  # Teléfono de prueba para desarrollo
             codigo = "123456"  # Código fijo para pruebas
         else:
             # ✅ Enviar código por el canal elegido (controlar excepciones externas)
