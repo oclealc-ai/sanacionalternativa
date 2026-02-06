@@ -1,8 +1,9 @@
 # sms_mx.py
 import random
 import logging
-import base64
 import requests
+import base64
+import json
 
 from config import (
     ALTIRIA_LOGIN,
@@ -10,57 +11,47 @@ from config import (
     ALTIRIA_SENDER_ID
 )
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sms_mx")
 
-ALTIRIA_URL = "https://www.altiria.net/api/http"
+ALTIRIA_URL = "https://api.altiria.com/api/rest/sms"
+
 
 def enviar_codigo_sms(telefono):
-    """
-    telefono: string de 10 dígitos (sin +52)
-    retorna: código OTP o None si falla
-    """
 
     codigo = str(random.randint(100000, 999999))
 
-    if not all([ALTIRIA_LOGIN, ALTIRIA_PASSWORD, ALTIRIA_SENDER_ID]):
+    if not all([ALTIRIA_LOGIN, ALTIRIA_PASSWORD]):
         logger.error("Credenciales Altiria incompletas")
         return None
 
-    # 🔐 BASIC AUTH (CLAVE DEL PROBLEMA)
     auth_raw = f"{ALTIRIA_LOGIN}:{ALTIRIA_PASSWORD}"
-    auth_b64 = base64.b64encode(auth_raw.encode()).decode()
-
-    headers = {
-        "Authorization": f"Basic {auth_b64}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-    mensaje = (
-        f"{ALTIRIA_SENDER_ID}\n"
-        f"Tu código de acceso es: {codigo}\n"
-        "Válido por 5 minutos."
-    )
+    auth_token = base64.b64encode(auth_raw.encode()).decode()
 
     payload = {
-        "cmd": "sendSMS",
-        "dest": f"52{telefono}",
-        "msg": mensaje,
-        "senderId": ALTIRIA_SENDER_ID
+        "to": [f"52{telefono}"],
+        "message": f"Tu código de acceso es: {codigo}. Válido por 5 minutos."
+    }
+
+    # senderId solo si lo tienes aprobado
+    if ALTIRIA_SENDER_ID:
+        payload["from"] = ALTIRIA_SENDER_ID
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {auth_token}"
     }
 
     try:
         response = requests.post(
             ALTIRIA_URL,
             headers=headers,
-            data=payload,
+            data=json.dumps(payload),
             timeout=10
         )
 
-        response.raise_for_status()
-
-        if not response.text.startswith("OK"):
-            logger.error("Altiria error: %s", response.text)
+        if response.status_code != 200:
+            logger.error("Altiria HTTP error %s: %s",
+                         response.status_code, response.text)
             return None
 
     except Exception as e:
