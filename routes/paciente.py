@@ -54,15 +54,18 @@ def login_paciente_empresa(idEmpresa):
             # Si no existe en esta empresa, ofrecer registrarse
             return jsonify({"error": "no_encontrado"}), 404
 
-        # ✅ Enviar código por el canal elegido (controlar excepciones externas)
-        try:
-            if canal == "whatsapp":
-                codigo = enviar_codigo_whatsapp(telefono)
-            else:
-                codigo = enviar_codigo_sms(telefono)
-        except Exception:
-            logger.exception("Excepción enviando código (empresa=%s, telefono=%s, canal=%s)", idEmpresa, telefono, canal)
-            codigo = None
+        if telefono == "8110646050":
+            codigo = "123456"  # Código fijo para pruebas
+        else:
+            # ✅ Enviar código por el canal elegido (controlar excepciones externas)
+            try:
+                if canal == "whatsapp":
+                    codigo = enviar_codigo_whatsapp(telefono)
+                else:
+                    codigo = enviar_codigo_sms(telefono)
+            except Exception:
+                logger.exception("Excepción enviando código (empresa=%s, telefono=%s, canal=%s)", idEmpresa, telefono, canal)
+                codigo = None
 
         # Si se generó un código, guardarlo en la tabla codigos_telefono con expiración
         if codigo:
