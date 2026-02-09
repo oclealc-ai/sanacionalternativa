@@ -50,7 +50,8 @@ def menu_citas():
 @citas_paciente_bp.route("/paciente/mis_citas")
 def mis_citas():
     idPaciente = session.get("idPaciente")
-
+    id_empresa = session.get("idEmpresa")
+    
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
@@ -65,10 +66,11 @@ def mis_citas():
         FROM citas c
         JOIN usuarios u ON u.Usuario = c.Terapeuta
         WHERE c.idPaciente = %s
+          AND c.idEmpresa = %s
           AND c.FechaCita >= CURDATE()
           AND c.Estatus IN ('Reservada', 'Confirmada', 'Cancelada')
         ORDER BY c.FechaCita, c.HoraCita
-    """, (idPaciente,))
+    """, (idPaciente, id_empresa))
 
     citas = cursor.fetchall()
 
@@ -83,6 +85,7 @@ def mis_citas():
 def citas_disponibles():
     fecha = request.args.get("fecha")
     terapeuta_sel = request.args.get("terapeuta") 
+    id_empresa = session.get("idEmpresa")
     
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
@@ -90,18 +93,18 @@ def citas_disponibles():
     cursor.execute("""
         SELECT Usuario, NombreUsuario
         FROM usuarios
-        WHERE TipoUsuario = 'terapeuta'
+        WHERE TipoUsuario = 'terapeuta' AND idEmpresa = %s
         ORDER BY NombreUsuario
-    """)
+    """, (id_empresa,))
     terapeutas = cursor.fetchall()
     
     sql = """
         SELECT idCita, HoraCita, Terapeuta
         FROM citas
-        WHERE FechaCita = %s
+        WHERE FechaCita = %s AND idEmpresa = %s
           AND Estatus = 'Disponible'
     """
-    params = [fecha]
+    params = [fecha, id_empresa]
 
     if terapeuta_sel:
         sql += " AND Terapeuta = %s"
@@ -138,15 +141,16 @@ def citas_disponibles():
 def reservar_fecha_cita():
     id_cita = request.args.get("idCita")
     id_paciente = session.get("idPaciente")
-
+    id_empresa = session.get("idEmpresa")
+    
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
         SELECT FechaCita, HoraCita 
         FROM citas 
-        WHERE idCita = %s
-    """, (id_cita,))
+        WHERE idCita = %s AND idEmpresa = %s
+    """, (id_cita, id_empresa))
 
     cita = cursor.fetchone()
 
@@ -156,7 +160,8 @@ def reservar_fecha_cita():
     resp = make_response(render_template("reservar_cita.html",
                          cita=cita,
                          id_cita=id_cita,
-                         id_paciente=id_paciente))
+                         id_paciente=id_paciente,
+                         id_empresa=id_empresa))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
@@ -171,6 +176,8 @@ def reservar_cita():
     id_cita = request.form.get("idCita")
     para = request.form.get("Para")
     id_paciente = session.get("idPaciente")
+    id_empresa = session.get("idEmpresa")
+    
     tipo = request.form.get("tipo", "")  # <-- aquí recuperamos “confirmar / cancelar / reagendar”
 
     conn = conectar_bd()
@@ -179,8 +186,8 @@ def reservar_cita():
     cursor.execute("""
         UPDATE citas
         SET Estatus = 'Reservada', idPaciente = %s, FechaSolicitud = NOW(), Para = %s   
-        WHERE idCita = %s AND Estatus IN ('Disponible', 'Reservada')
-    """, (id_paciente, para, id_cita))
+        WHERE idCita = %s AND idEmpresa = %s AND Estatus IN ('Disponible', 'Reservada')
+    """, (id_paciente, para, id_cita, id_empresa))
 
     conn.commit()
     cursor.close()
@@ -255,23 +262,4 @@ def reagendar_cita():
 
     # Luego mandar al calendario para elegir nueva
     return redirect(url_for("citas_paciente.menu_citas"))
-
-# Registra un cambio en la bitácora de la cita.
-def registrar_historial(IdCita, Usuario, Estatus, Comentario=""):
-    """"Registra un cambio en la bitácora de la cita."""
-    db = conectar_bd()
-    cursor = db.cursor()
-    
-    now = datetime.now()
-    fecha = now.date()
-    hora = now.time().replace(microsecond=0)  # sin microsegundos
-    
-    cursor.execute("""
-        INSERT INTO historial_citas (IdCita, Fecha, Hora, Usuario, Estatus, Comentario)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (IdCita, fecha, hora, Usuario, Estatus, Comentario))
-    
-    db.commit()
-    cursor.close()
-    db.close()
     

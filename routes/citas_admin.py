@@ -19,20 +19,20 @@ def generar_citas():
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
+    usuario = session.get("Usuario", None)  # usuario que generó la cita
+    id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
+    
     # -----------------------------
     # OBTENER TERAPEUTAS
     # -----------------------------
     cursor.execute("""
         SELECT idUsuario, Usuario, NombreUsuario
         FROM usuarios
-        WHERE TipoUsuario='terapeuta'
+        WHERE idEmpresa = id_empresa AND TipoUsuario='terapeuta'
         ORDER BY Usuario
     """)
     terapeutas = cursor.fetchall()  # lista de dicts con idUsuario, Usuario y NombreUsuario
     # -----------------------------
-    
-    usuario = session.get("Usuario", None)  # usuario que generó la cita
-    id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
     
     logger.warning(f"id_empresa: {id_empresa}")
     
@@ -76,11 +76,13 @@ def generar_citas():
                     cursor.execute("""
                         SELECT COUNT(*) AS ValidaEmpalme
                         FROM citas
-                        WHERE Terapeuta = %s
+                        WHERE idEmpresa = %s
+                        AND Terapeuta = %s
                         AND FechaCita = %s
                         AND HoraCita < %s
                         AND ADDTIME(HoraCita, SEC_TO_TIME(%s*60)) > %s
                     """, (
+                        id_empresa,
                         id_terapeuta,
                         dia.date(),
                         hora_fin_nueva,
@@ -97,9 +99,9 @@ def generar_citas():
                         continue
 
                     cursor.execute("""
-                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa, Empresa)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (id_terapeuta, dia.date(), hora_actual.time(), 'Disponible', None, None, '', intervalo, id_empresa, id_empresa))
+                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (id_terapeuta, dia.date(), hora_actual.time(), 'Disponible', None, None, '', intervalo, id_empresa))
                     
                     total_creadas += 1
                     hora_actual += timedelta(minutes=intervalo)
@@ -142,9 +144,9 @@ def citas_por_dia():
         SELECT c.*, p.NombrePaciente 
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
-        WHERE FechaCita = %s
+        WHERE FechaCita = %s AND c.idEmpresa = %s 
         ORDER BY HoraCita
-    """, (fecha,))
+    """, (fecha, session.get("idEmpresa")))
 
     citas = cursor.fetchall()
 
@@ -172,16 +174,17 @@ def lista_citas():
 
     usuario_logueado = session.get("Usuario")      # debe traer username
     tipo_usuario = session.get("TipoUsuario")      # debe traer 'terapeuta' o 'admin'
-
+    id_empresa = session.get("idEmpresa")          # debe traer el idEmpresa del admin logueado
+    
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
     SELECT Usuario, NombreUsuario
     FROM usuarios
-    WHERE TipoUsuario = 'terapeuta'
+    WHERE TipoUsuario = 'terapeuta' AND idEmpresa = %s
     ORDER BY NombreUsuario
-    """)
+    """, (id_empresa,))
     terapeutas = cursor.fetchall()
 
 
@@ -193,9 +196,9 @@ def lista_citas():
     FROM citas c
     LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
     LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
-    WHERE c.FechaCita = %s
+    WHERE c.FechaCita = %s AND c.idEmpresa = %s 
     ORDER BY c.HoraCita
-    """, (fecha,))
+    """, (fecha, id_empresa))
 
     citas = cursor.fetchall()
 
@@ -207,7 +210,8 @@ def lista_citas():
         fecha=fecha,
         citas=citas,
         terapeutas=terapeutas,
-        usuario_logueado=usuario_logueado if tipo_usuario == "terapeuta" else None
+        usuario_logueado=usuario_logueado if tipo_usuario == "terapeuta" else None,
+        id_empresa=id_empresa
     )
     
 
@@ -224,16 +228,18 @@ def lista_citas_bloquear():
     fecha = request.args.get("fecha")
     if not fecha:
         return jsonify([])
-
+    
+    id_empresa = session.get("idEmpresa")
+    
     db = conectar_bd()
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
         SELECT c.IdCita, c.HoraCita, c.Estatus, c.idPaciente, p.NombrePaciente AS Paciente
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
-        WHERE DATE(c.FechaCita) = %s
+        WHERE DATE(c.FechaCita) = %s AND c.idEmpresa = %s
         ORDER BY c.HoraCita
-    """, (fecha,))
+    """, (fecha, id_empresa))
     citas = cursor.fetchall()
     cursor.close()
     db.close()
@@ -257,7 +263,7 @@ def bloquear_citas():
     data = request.get_json()
     ids = data.get("ids", [])
     usuario = data.get("usuario", "Asistente")
-    
+        
     if not ids:
         return jsonify({"mensaje": "No se recibieron citas para bloquear"}), 400
 
