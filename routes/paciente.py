@@ -226,6 +226,7 @@ def alta_paciente_empresa(idEmpresa):
             return render_template("alta_paciente.html", 
                                    mensaje=mensaje, 
                                    tipo_mensaje=tipo_mensaje,
+                                   idEmpresa=idEmpresa,
                                    empresa=empresa["RazonSocial"],
                                    telefono=telefono)
 
@@ -243,6 +244,7 @@ def alta_paciente_empresa(idEmpresa):
             return render_template("alta_paciente.html", 
                                    mensaje=mensaje, 
                                    tipo_mensaje=tipo_mensaje,
+                                   idEmpresa=idEmpresa,
                                    empresa=empresa["RazonSocial"],
                                    telefono=telefono)
 
@@ -260,6 +262,7 @@ def alta_paciente_empresa(idEmpresa):
             return render_template("alta_paciente.html", 
                                    mensaje=mensaje, 
                                    tipo_mensaje=tipo_mensaje,
+                                   idEmpresa=idEmpresa,
                                    empresa=empresa["RazonSocial"],
                                    telefono=telefono)
 
@@ -296,6 +299,7 @@ def alta_paciente_empresa(idEmpresa):
             return render_template("alta_paciente.html", 
                                    mensaje=mensaje, 
                                    tipo_mensaje=tipo_mensaje,
+                                   idEmpresa=idEmpresa,
                                    empresa=empresa["RazonSocial"],
                                    telefono=telefono)
 
@@ -304,5 +308,6 @@ def alta_paciente_empresa(idEmpresa):
     return render_template("alta_paciente.html", 
                           mensaje=mensaje, 
                           tipo_mensaje=tipo_mensaje,
+                          idEmpresa=idEmpresa,
                           empresa=empresa["RazonSocial"],
                           telefono=telefono_param)

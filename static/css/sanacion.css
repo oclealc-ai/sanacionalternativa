@@ -142,3 +142,27 @@ input[type="date"] {
     width: 100%;
     max-width: 350px;
 }
+
+/* =========================
+   Alertas de sistema
+========================= */
+
+.alert {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.alert.error {
+    background-color: #ffe5e5;
+    color: #8a0000;
+    border: 1px solid #cc0000;
+}
+
+.alert.success {
+    background-color: #e6ffea;
+    color: #006b1b;
+    border: 1px solid #00a32a;
+}
