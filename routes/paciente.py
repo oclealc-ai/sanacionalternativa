@@ -84,8 +84,8 @@ def login_paciente_empresa(idEmpresa):
         if not codigo:
             # Diagnóstico: determinar posible causa y registrar
             if canal == "sms":
-                if not all([config.ALTIRIA_LOGIN, config.ALTIRIA_PASSWORD, config.ALTIRIA_SENDER_ID]):
-                    reason = "altiria_no_config"
+                if not all([config.LOGIN_360nrs, config.PASSWORD_360nrs, config.SENDER_ID360nrs]):
+                    reason = "360nrs_no_config"
                 else:
                     reason = "sms_send_error"
             else:
