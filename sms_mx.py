@@ -34,7 +34,9 @@ def enviar_codigo_sms(telefono):
     # senderId solo si lo tienes aprobado
     if SENDER_ID360nrs:
         payload["from"] = SENDER_ID360nrs
-
+    else:
+        payload["from"] = "CitaNet"  # Valor por defecto si no se proporciona senderId  
+        
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Basic {auth_token}"
