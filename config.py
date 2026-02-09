@@ -27,13 +27,14 @@ WHATSAPP_URL = (
     else None
 )
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN  = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE       = os.getenv("TWILIO_PHONE")
+#TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+#TWILIO_AUTH_TOKEN  = os.getenv("TWILIO_AUTH_TOKEN")
+#TWILIO_PHONE       = os.getenv("TWILIO_PHONE")
 
-# ALTIRIA SMS (MX)
-ALTIRIA_LOGIN = os.getenv("ALTIRIA_LOGIN")
-ALTIRIA_PASSWORD = os.getenv("ALTIRIA_PASSWORD")
-ALTIRIA_SENDER_ID = os.getenv("ALTIRIA_SENDER_ID")
+# 360nrs SMS (MX)
+LOGIN_360nrs = os.getenv("LOGIN_360nrs")
+PASSWORD_360nrs = os.getenv("PASSWORD_360nrs")
+SENDER_ID360nrs = os.getenv("SENDER_ID360nrs")
+URL_360nrs = "https://dashboard.360nrs.com/api/rest/sms"
 
 URL_BASE = os.getenv("URL_BASE")
