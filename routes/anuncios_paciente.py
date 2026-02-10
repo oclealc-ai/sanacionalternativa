@@ -48,8 +48,12 @@ def nuevo_anuncio():
 @anuncios_paciente_bp.route("/paciente/anuncios/guardar", methods=["POST"])
 def guardar_anuncio():
     print("SESSION ACTUAL en /anuncios/guardar: anuncios_paciente.py:", dict(session))
-    if "idPaciente" not in session:
-        return redirect("/login/paciente")
+    
+    print("Datos recibidos en /anuncios/guardar:", {
+        "descripcion": request.form.get("descripcion"),
+        "url": request.form.get("url"),
+        "imagen": request.files.get("imagen").filename if request.files.get("imagen") else None
+    })
 
     id_paciente = session["idPaciente"]
     id_empresa = session["idEmpresa"]
@@ -57,12 +61,6 @@ def guardar_anuncio():
     descripcion = request.form.get("descripcion", "").strip()
     url = request.form.get("url", "").strip()
     imagen = request.files.get("imagen")
-
-    print("Datos recibidos en /anuncios/guardar:", {
-        "descripcion": descripcion,
-        "url": url,
-        "imagen": imagen.filename if imagen else None
-    })
 
     if not descripcion or not imagen:
         return "Faltan datos obligatorios", 400
