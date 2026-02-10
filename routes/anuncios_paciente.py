@@ -9,7 +9,6 @@ anuncios_paciente_bp = Blueprint("anuncios_paciente", __name__)
 
 @anuncios_paciente_bp.route("/paciente/mis_anuncios")
 def mis_anuncios():
-    #print("SESSION ACTUAL en /mis_anuncios: anuncios_paciente.py:", dict(session))
     if "idPaciente" not in session:
         return redirect("/login/paciente")
 
@@ -19,7 +18,7 @@ def mis_anuncios():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT idAnuncio, Imagen, Descripcion, URLAnuncio
+        SELECT idAnuncio, imagen, descripcion, urlAnuncio
         FROM anuncios
         WHERE idPaciente = %s
         ORDER BY idAnuncio DESC
@@ -79,15 +78,16 @@ def guardar_anuncio():
 
     cursor.execute("""
         INSERT INTO anuncios
-        (idEmpresa, idPaciente, Imagen, Descripcion, URLAnuncio, Estado)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        (idEmpresa, idPaciente, imagen, descripcion, urlAnuncio, activo, fechaCreacion)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
         id_empresa,
         id_paciente,
         ruta_bd,
         descripcion,
         url,
-        0  # Estado: Pendiente
+        0,  # Estado: Pendiente
+        datetime.now()
     ))
 
     conn.commit()
