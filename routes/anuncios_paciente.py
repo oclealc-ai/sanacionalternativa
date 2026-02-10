@@ -1,6 +1,7 @@
 from flask          import Blueprint, render_template, session, redirect, request
 from database       import conectar_bd
 from datetime       import datetime
+from urllib.parse   import urlparse, urlunparse
 from werkzeug.utils import secure_filename
 
 import os
@@ -121,6 +122,24 @@ def guardar_anuncio():
     imagen = request.files.get("imagen")
     id_anuncio = request.form.get("idAnuncio")
 
+    # Normalizar URL: añadir esquema si falta
+    def normalize_url(u: str) -> str:
+        if not u:
+            return ''
+        u = u.strip()
+        # si no tiene esquema, asumir https://
+        if not urlparse(u).scheme:
+            u = 'https://' + u
+        parsed = urlparse(u)
+        # si el netloc está vacío y el path contiene el dominio, reconstruir
+        if not parsed.netloc and parsed.path:
+            parsed = urlparse('https://' + u)
+        if parsed.scheme not in ('http', 'https'):
+            return ''
+        return urlunparse(parsed)
+
+    url = normalize_url(url)
+
     conn = conectar_bd()
     cursor = conn.cursor()
 
@@ -144,9 +163,9 @@ def guardar_anuncio():
             ruta_bd = "/" + ruta_final
             cursor.execute("UPDATE anuncios SET imagen=%s WHERE idAnuncio=%s", (ruta_bd, id_anuncio))
 
-        # actualizar descripción y url
+        # actualizar descripción y url (normalizado)
         cursor.execute("UPDATE anuncios SET descripcion=%s, urlAnuncio=%s WHERE idAnuncio=%s",
-                       (descripcion, url, id_anuncio))
+                   (descripcion, url, id_anuncio))
 
         conn.commit()
         cursor.close()

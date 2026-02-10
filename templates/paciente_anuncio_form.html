@@ -103,5 +103,20 @@ document.addEventListener('DOMContentLoaded', function(){
             reader.readAsDataURL(file);
         }
     });
+
+    // Normalizar URL antes de enviar el formulario
+    const form = document.querySelector('form[action="/paciente/anuncios/guardar"]');
+    if (form) {
+        const inputUrl = form.querySelector('input[name="url"]');
+        function normalize(u) {
+            u = (u||'').trim();
+            if (!u) return '';
+            if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(u)) u = 'https://' + u;
+            try { return new URL(u).href; } catch { return u; }
+        }
+        form.addEventListener('submit', function(){
+            if (inputUrl) inputUrl.value = normalize(inputUrl.value);
+        });
+    }
 });
 </script>
