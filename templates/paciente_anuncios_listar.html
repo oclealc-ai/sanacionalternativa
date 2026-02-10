@@ -6,6 +6,16 @@
     <link rel="stylesheet" href="/static/css/sanacion.css">
     <style>
         /* Cards grid for anuncios */
+        .anuncios-header {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 10px 0;
+            z-index: 60;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .container { padding: 8px; max-width: 100%; }
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -40,13 +50,23 @@
             .card img { height: 120px; }
             .card-body { padding: 10px; }
         }
+
+        /* Ensure cards stretch full width on small phones (small margin preserved) */
+        @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr; gap: 12px; }
+            .card { margin-left: 6px; margin-right: 6px; }
+            .card img { height: 220px; }
+            .card h3 { font-size: 1.05rem; }
+        }
     </style>
 </head>
 
 <body>
-<div class="container">
+    <div class="container">
 
-    <h2>📢 Mis anuncios</h2>
+    <header class="anuncios-header">
+        <h2 style="margin:0; padding-left:6px;">📢 Mis anuncios</h2>
+    </header>
 
     <a href="/paciente/anuncios/nuevo" class="btn">
 
