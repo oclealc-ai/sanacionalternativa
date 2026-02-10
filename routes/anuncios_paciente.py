@@ -18,7 +18,7 @@ def mis_anuncios():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT idAnuncio, imagen, descripcion, urlAnuncio
+        SELECT idAnuncio, imagen AS Imagen, descripcion AS Descripcion, urlAnuncio AS URLAnuncio, fechaInicioVigencia AS FechaInicioVigencia, fechaFinVigencia AS FechaFinVigencia
         FROM anuncios
         WHERE idPaciente = %s
         ORDER BY idAnuncio DESC
