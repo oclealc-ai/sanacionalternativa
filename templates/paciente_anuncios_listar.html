@@ -4,6 +4,43 @@
     <meta charset="UTF-8">
     <title>Mis anuncios</title>
     <link rel="stylesheet" href="/static/css/sanacion.css">
+    <style>
+        /* Cards grid for anuncios */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+        .card-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .card h3 { margin: 0; font-size: 1rem; color: #222; }
+        .card .meta { font-size: 0.9rem; color: #666; }
+        .card .actions { margin-top: auto; }
+        .card .actions a { margin-right: 8px; text-decoration: none; color: #007bff; }
+        @media (max-width: 420px) {
+            .card img { height: 120px; }
+            .card-body { padding: 10px; }
+        }
+    </style>
 </head>
 
 <body>
@@ -16,50 +53,28 @@
         ➕ Nuevo anuncio
     </a>
 
-   <table>
-    <tr>
-        <th>Imagen</th>
-        <th>Descripción</th>
-        <th>URL</th>
-        <th>Vigencia</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-    </tr>
-
-    {% for a in anuncios %}
-    <tr>
-        <td>
-            <img src="{{ a.Imagen }}" width="100">
-        </td>
-        <td>{{ a.Descripcion }}</td>
-        <td>{{ a.URLAnuncio }}</td>
-
-        <td>
-            {% if a.FechaInicioVigencia and a.FechaFinVigencia %}
-                {{ a.FechaInicioVigencia }}<br>
-                al<br>
-                {{ a.FechaFinVigencia }}
-            {% else %}
-                <em>No asignada</em>
-            {% endif %}
-        </td>
-
-        <td>
-            {% if a.FechaInicioVigencia and a.FechaFinVigencia %}
-                🟢 Activo
-            {% else %}
-                ⚪ Inactivo
-            {% endif %}
-        </td>
-
-        <td>
-            <a href="/paciente/anuncios/editar/{{ a.idAnuncio }}">✏️ Editar</a>
-            |
-            <a href="/paciente/anuncios/eliminar/{{ a.idAnuncio }}">🗑</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+    <div class="cards-grid">
+        {% for a in anuncios %}
+        <article class="card">
+            <img src="{{ a.Imagen }}" alt="Anuncio">
+            <div class="card-body">
+                <h3>{{ a.Descripcion[:120] }}{% if a.Descripcion|length > 120 %}...{% endif %}</h3>
+                <div class="meta"><a href="{{ a.URLAnuncio }}" target="_blank" rel="noopener">{{ a.URLAnuncio }}</a></div>
+                <div class="meta">
+                    {% if a.FechaInicioVigencia and a.FechaFinVigencia %}
+                        Vigencia: {{ a.FechaInicioVigencia }} — {{ a.FechaFinVigencia }}
+                    {% else %}
+                        <em>Sin vigencia</em>
+                    {% endif %}
+                </div>
+                <div class="actions">
+                    <a href="/paciente/anuncios/editar/{{ a.idAnuncio }}">✏️ Editar</a>
+                    <a href="/paciente/anuncios/eliminar/{{ a.idAnuncio }}">🗑 Eliminar</a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
 
 </div>
 </body>
