@@ -102,9 +102,9 @@ def login_paciente_empresa(idEmpresa):
             return jsonify({"error": reason}), 500
 
         # Guardamos en sesión: teléfono, empresa e ID de paciente (temporal)
-        session['telefono_temp'] = telefono
-        session['idEmpresa_temp'] = idEmpresa
-        session['idPaciente_temp'] = paciente['idPaciente']
+        #session['telefono_temp'] = telefono
+        #session['idEmpresa_temp'] = idEmpresa
+        #session['idPaciente_temp'] = paciente['idPaciente']
 
         cursor.close()
         conn.close()

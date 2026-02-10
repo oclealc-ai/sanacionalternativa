@@ -58,6 +58,12 @@ def guardar_anuncio():
     url = request.form.get("url", "").strip()
     imagen = request.files.get("imagen")
 
+    print("Datos recibidos en /anuncios/guardar:", {
+        "descripcion": descripcion,
+        "url": url,
+        "imagen": imagen.filename if imagen else None
+    })
+
     if not descripcion or not imagen:
         return "Faltan datos obligatorios", 400
 
