@@ -63,7 +63,7 @@
         <textarea name="descripcion" rows="4" required>{{ anuncio.Descripcion if anuncio else '' }}</textarea>
 
         <label>URL destino</label>
-        <input type="url" name="url" value="{{ anuncio.URLAnuncio if anuncio else '' }}" required>
+        <input type="text" name="url" placeholder="Ejemplo: sanacionalternativa.com" value="{{ anuncio.URLAnuncio if anuncio else '' }}" required>
 
         <label>Fecha inicio vigencia</label>
         <input type="date" class="readonly" readonly
