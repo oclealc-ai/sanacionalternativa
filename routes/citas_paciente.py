@@ -44,7 +44,19 @@ def menu_principal_paciente():
     
 @citas_paciente_bp.route("/paciente/menu_citas")
 def menu_citas():
-    return render_template("calendario_paciente.html")
+    idEmpresa = session.get("idEmpresa")
+    
+    # Obtener el nombre de la empresa de la BD
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
+    empresa_row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
+    
+    return render_template("calendario_paciente.html", empresa=empresa_nombre)
 
 
 @citas_paciente_bp.route("/paciente/mis_citas")
