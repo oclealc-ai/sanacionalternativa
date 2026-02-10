@@ -48,6 +48,10 @@
 
     <form method="POST" action="/paciente/anuncios/guardar" enctype="multipart/form-data">
 
+        {% if anuncio %}
+            <input type="hidden" name="idAnuncio" value="{{ anuncio.idAnuncio }}">
+        {% endif %}
+
         <label>Imagen del anuncio</label>
         <input type="file" name="imagen">
 
@@ -61,7 +65,7 @@
         <textarea name="descripcion" rows="4" required>{{ anuncio.Descripcion if anuncio else '' }}</textarea>
 
         <label>URL destino</label>
-        <input type="url" name="url" value="{{ anuncio.URLAnuncio if anuncio else '' }}" >
+        <input type="url" name="url" value="{{ anuncio.URLAnuncio if anuncio else '' }}" required>
 
         <label>Fecha inicio vigencia</label>
         <input type="date" class="readonly" readonly
