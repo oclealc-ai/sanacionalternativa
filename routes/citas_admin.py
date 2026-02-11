@@ -28,9 +28,9 @@ def generar_citas():
     cursor.execute("""
         SELECT idUsuario, Usuario, NombreUsuario
         FROM usuarios
-        WHERE idEmpresa = id_empresa AND TipoUsuario='terapeuta'
+        WHERE idEmpresa = %s AND TipoUsuario='terapeuta'
         ORDER BY Usuario
-    """)
+    """, (id_empresa,))
     terapeutas = cursor.fetchall()  # lista de dicts con idUsuario, Usuario y NombreUsuario
     # -----------------------------
     
