@@ -12,7 +12,7 @@
             font-family: Arial, sans-serif;
         }
 
-        .form-container {
+        .anuncio-wrapper {
             width: 100%;
             max-width: 100%;
             min-height: 100vh;
@@ -25,7 +25,7 @@
 
         }
 
-        .form-card {
+        .anuncio-card {
             width: 100%;
             max-width: 600px; /* límite solo en pantallas grandes */
             background: #fff;
@@ -64,11 +64,11 @@
     </style>
 </head>
 
-<body class="menu-page">
+<body style="display:block !important;">
 
 
-<div class="form-container">
-    <div class="form-card">
+<div class="anuncio-wrapper">
+    <div class="anuncio-card">
     <h2>{{ 'Editar anuncio' if anuncio else 'Nuevo anuncio' }}</h2>
 
     <form method="POST" action="/paciente/anuncios/guardar" enctype="multipart/form-data">
