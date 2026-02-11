@@ -10,28 +10,42 @@
     <style>
         /* Cards grid for anuncios */
         .anuncios-header {
-            position: -webkit-sticky;
             position: sticky;
             top: 0;
             z-index: 60;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            padding: 12px 16px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 12px 14px;
             background: #fff;
             border-bottom: 1px solid #e5e5e5;
         }
-        .anuncios-container {
-            padding: 10px;
-            width: 100%;
-            max-width: 100%;
-        }
-
+        
         .anuncios-header h1 {
             margin: 0;
             font-size: 1.2rem;
             font-weight: 600;
         }
 
-        
+        .anuncios-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .btn-nuevo {
+            font-size: 0.9rem;
+            padding: 6px 10px;
+        }
+
+        .anuncios-container {
+            padding: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+
         .container { padding: 8px; max-width: 100%; }
         .cards-grid {
             display: grid;
@@ -82,12 +96,14 @@
 <body>
     
     <header class="anuncios-header">
-        <h2 style="margin:0; padding-left:6px;">📢 Mis anuncios</h2>
+        <h2>📢 Mis anuncios</h2>
+
+        <a href="/paciente/anuncios/nuevo" class="btn btn-nuevo">
+            ➕ Nuevo anuncio
+        </a>
     </header>
 
-    <a href="/paciente/anuncios/nuevo" class="btn">
-        ➕ Nuevo anuncio
-    </a>
+    
 
     <div class="container">
 
