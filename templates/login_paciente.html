@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Paciente</title>
 
-    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/log.css">
 
     <style>
         body {
@@ -13,48 +13,37 @@
             background: url('/static/img/fondo03.jpg') no-repeat center center fixed;
             background-size: cover;
         }
-
-        .container {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.20);
-            width: 90%;
-            max-width: 400px;
-            margin: 40px auto;
-        }
     </style>
 
 </head>
 
-<body>
+<body class="log-body">
 
-<div class="container">
+<div class="log-container">
     
-    <p style="text-align:center; color:#28a745; font-weight:bold;">
+    <p class="log-company-name" style="text-align:center;">
         <br> {{ empresa }}
     </p>
 
-    <label for="telefono">📱 Ingresa tu número para recibir código:</label>
+    <label for="telefono" class="log-label">📱 Ingresa tu número para recibir código:</label>
     <br> <br>
-    <input type="tel" id="telefono" placeholder="Ejemplo: 8112345678" required>
+    <input type="tel" id="telefono" placeholder="Ejemplo: 8112345678" required class="log-input">
         
-    <button onclick="enviarCodigo()">Enviar código</button>
+    <button onclick="enviarCodigo()" class="log-btn">Enviar código</button>
     
-    <div id="cajaCodigo" style="display:none; margin-top:20px;">
+    <div id="cajaCodigo" class="log-form-section" style="display:none; margin-top:20px;">
         <h3>Validar Código</h3>
         
         <input type="text" id="codigo"
                maxlength="6"
                placeholder="Código recibido"
-               inputmode="numeric">
+               inputmode="numeric"
+               class="log-input">
 
-        <button onclick="validarCodigo()">Validar</button>
+        <button onclick="validarCodigo()" class="log-btn">Validar</button>
     </div>
 
-    <div id="mensaje" class="error-message" style="display:none;"></div>
+    <div id="mensaje" class="log-mensaje" style="display:none;"></div>
 
 </div>
 
@@ -188,7 +177,7 @@ function mostrar(msg, error = true){
     div.style.display = "block";
     div.textContent = msg;
 
-    div.className = error ? "error-message" : "success-message";
+    div.className = error ? "log-error" : "log-success";
 }
 
 </script>

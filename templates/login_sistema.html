@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso al Sistema</title>
     
-    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/log.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <style>
@@ -14,40 +14,28 @@
             background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
             background-size: cover;
         }
-
-        .container {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.20);
-            width: 90%;
-            max-width: 400px;
-            margin: 40px auto;
-        }
     </style>
 
 
 </head>
-<body>
+<body class="log-body">
 
-    <div class="container">
+    <div class="log-container">
         <h2>Ingreso de Usuarios</h2>
-        <div id="mensaje"></div>
+        <div id="mensaje" class="log-mensaje"></div>
         
         <form id="loginForm">
-            <label for="usuario">👤 Usuario:</label>
-            <input type="text" id="usuario" name="Usuario" required placeholder="Tu nombre de usuario">
+            <label for="usuario" class="log-label">👤 Usuario:</label>
+            <input type="text" id="usuario" name="Usuario" required placeholder="Tu nombre de usuario" class="log-input">
             
-            <label for="password"><br>🔒 Contraseña:</label>
-            <input type="password" id="password" name="Password" required placeholder="Tu contraseña">
+            <label for="password" class="log-label"><br>🔒 Contraseña:</label>
+            <input type="password" id="password" name="Password" required placeholder="Tu contraseña" class="log-input">
             
-            <label for="empresa"><br>Empresa:</label>
-            <input type="number" id="empresa" placeholder="Empresa" required>
+            <label for="empresa" class="log-label"><br>Empresa:</label>
+            <input type="number" id="empresa" placeholder="Empresa" required class="log-input">
 
 
-            <button type="submit">Iniciar Sesión</button>
+            <button type="submit" class="log-btn">Iniciar Sesión</button>
         </form>
     </div>
 
@@ -60,7 +48,13 @@
         // Función para mostrar mensajes de estado
         function mostrarMensaje(texto, tipo) {
             mensajeDiv.textContent = texto;
-            mensajeDiv.className = tipo; // 'success' o 'error'
+            if (tipo === 'success') {
+                mensajeDiv.className = 'log-success';
+            } else if (tipo === 'error') {
+                mensajeDiv.className = 'log-error';
+            } else {
+                mensajeDiv.className = 'log-mensaje';
+            }
         }
 
         form.addEventListener('submit', async function(event) {

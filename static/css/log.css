@@ -1,0 +1,396 @@
+/* ================================================
+   LOG CSS — ESTILOS PARA LOGIN Y LOGOUT
+   Basado en sanacion_ajustandose.css
+================================================ */
+
+/* ----------- ESTILO GLOBAL ----------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.log-body {
+    font-family: "Poppins", "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* =========== CONTENEDOR PRINCIPAL =========== */
+.log-container {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    padding: 35px 30px;
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.log-container h2 {
+    margin: 0 0 25px 0;
+    color: #2f6f4e;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.log-container h3 {
+    color: #2f6f4e;
+    font-size: 18px;
+    margin: 20px 0 15px 0;
+}
+
+.log-container p {
+    color: #555;
+    font-size: 14px;
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+/* =========== ETIQUETAS Y FORMULARIOS =========== */
+.log-label {
+    display: block;
+    margin: 20px 0 8px 0;
+    color: #2f6f4e;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: left;
+}
+
+/* =========== CAMPOS DE ENTRADA =========== */
+.log-input,
+.log-input-text,
+.log-input-password,
+.log-input-email,
+.log-input-tel,
+.log-input-number,
+.log-input-date,
+.log-input-search,
+.log-select,
+.log-textarea {
+    width: 100%;
+    max-width: 95%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+}
+
+.log-input:focus,
+.log-input-text:focus,
+.log-input-password:focus,
+.log-input-email:focus,
+.log-input-tel:focus,
+.log-input-number:focus,
+.log-input-date:focus,
+.log-input-search:focus,
+.log-select:focus,
+.log-textarea:focus {
+    border-color: #2f6f4e;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 8px rgba(47, 111, 78, 0.4);
+    outline: none;
+}
+
+.log-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* =========== BOTONES =========== */
+.log-btn,
+.log-button,
+.log-btn-primary,
+.log-btn-submit {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    background: #3b8f66;
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 143, 102, 0.3);
+}
+
+.log-btn:hover,
+.log-button:hover,
+.log-btn-primary:hover,
+.log-btn-submit:hover {
+    background: #2b6b4b;
+    box-shadow: 0 6px 18px rgba(43, 107, 75, 0.4);
+    transform: translateY(-2px);
+}
+
+.log-btn:active,
+.log-button:active,
+.log-btn-primary:active,
+.log-btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Botón Secundario */
+.log-btn-secondary {
+    background: #e8f7ee;
+    color: #2f6f4e;
+    border: 1px solid #9bccad;
+    box-shadow: 0 2px 8px rgba(59, 143, 102, 0.1);
+}
+
+.log-btn-secondary:hover {
+    background: #d5f0e2;
+    border-color: #7bb89c;
+    box-shadow: 0 4px 12px rgba(59, 143, 102, 0.2);
+}
+
+/* =========== MENSAJES Y ALERTAS =========== */
+.log-mensaje,
+.log-error-message,
+.log-error,
+.log-success-message,
+.log-success {
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.log-error-message,
+.log-error {
+    background: #ffdfdf;
+    color: #b10d0d;
+    border-left-color: #ff3333;
+    border: 1px solid #ffb4b4;
+}
+
+.log-success-message,
+.log-success {
+    background: #defce5;
+    color: #1f6438;
+    border-left-color: #00cc33;
+    border: 1px solid #b2f2c9;
+}
+
+.log-mensaje {
+    margin-bottom: 20px;
+    min-height: 20px;
+}
+
+/* =========== ENLACES =========== */
+.log-link {
+    color: #2f6f4e;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.log-link:hover {
+    color: #1d4632;
+    text-decoration: underline;
+}
+
+.log-link-accent {
+    color: #3b8f66;
+}
+
+.log-link-accent:hover {
+    color: #2b6b4b;
+}
+
+/* =========== CONTENEDORES DIDÁCTICOS =========== */
+.log-form-section {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(47, 111, 78, 0.1);
+}
+
+.log-form-section h4 {
+    color: #2f6f4e;
+    margin: 0 0 15px 0;
+    font-size: 15px;
+}
+
+/* =========== CONDICIONALES =========== */
+.log-hidden {
+    display: none !important;
+}
+
+.log-visible {
+    display: block !important;
+}
+
+/* =========== ELEMENTO LOGO =========== */
+.log-logo {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px auto;
+    display: block;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* =========== TEXTO DESCRIPTIVO =========== */
+.log-description {
+    color: #666;
+    font-size: 13px;
+    margin: 15px 0;
+    line-height: 1.5;
+}
+
+.log-company-name {
+    text-align: center;
+    color: #28a745;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+/* =========== UTILIDADES =========== */
+.log-text-center {
+    text-align: center;
+}
+
+.log-text-left {
+    text-align: left;
+}
+
+.log-mt-20 {
+    margin-top: 20px;
+}
+
+.log-mb-20 {
+    margin-bottom: 20px;
+}
+
+.log-p-default {
+    padding: 15px;
+}
+
+/* =========== RESPONSIVO =========== */
+@media (max-width: 768px) {
+    .log-body {
+        padding: 10px;
+    }
+
+    .log-container {
+        padding: 25px 20px;
+        max-width: 100%;
+    }
+
+    .log-container h2 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .log-input,
+    .log-input-text,
+    .log-input-password,
+    .log-input-email,
+    .log-input-tel,
+    .log-input-number,
+    .log-input-date,
+    .log-input-search,
+    .log-select,
+    .log-textarea,
+    .log-btn,
+    .log-button,
+    .log-btn-primary,
+    .log-btn-submit,
+    .log-btn-secondary {
+        max-width: 100%;
+        padding: 11px 12px;
+        font-size: 14px;
+    }
+
+    .log-label {
+        font-size: 13px;
+        margin: 15px 0 6px 0;
+    }
+
+    .log-btn,
+    .log-button,
+    .log-btn-primary,
+    .log-btn-submit {
+        padding: 11px 15px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .log-container {
+        padding: 20px 15px;
+        margin: 20px auto;
+        border-radius: 12px;
+    }
+
+    .log-container h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .log-container h3 {
+        font-size: 16px;
+    }
+
+    .log-label {
+        font-size: 12px;
+        margin: 12px 0 5px 0;
+    }
+
+    .log-input,
+    .log-input-text,
+    .log-input-password,
+    .log-input-email,
+    .log-input-tel,
+    .log-input-number,
+    .log-input-date,
+    .log-input-search,
+    .log-select,
+    .log-textarea {
+        padding: 10px;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .log-btn,
+    .log-button,
+    .log-btn-primary,
+    .log-btn-submit,
+    .log-btn-secondary {
+        padding: 10px 12px;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .log-mensaje,
+    .log-error-message,
+    .log-success-message {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .log-logo {
+        width: 80px;
+        height: 80px;
+    }
+}

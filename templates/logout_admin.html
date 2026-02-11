@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cerrar Sesión</title>
 
-    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/log.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <style>
@@ -14,26 +14,14 @@
             background: url('/static/img/fondo04.jpg') no-repeat center center fixed;
             background-size: cover;
         }
-
-        .container {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.20);
-            width: 90%;
-            max-width: 400px;
-            margin: 40px auto;
-        }
     </style>
 
 </head>
 
-<body>
+<body class="log-body">
 
-    <div class="form-container">
-        <img src="/static/img/fondo06.jpg" alt="Logo" class="logo">
+    <div class="log-container">
+        <img src="/static/img/fondo06.jpg" alt="Logo" class="log-logo">
 
         <h2>Sesión Cerrada</h2>
 
@@ -43,8 +31,8 @@
             Tu sesión ha sido cerrada correctamente.
         </p>
 
-        <a href="/login/sistema">
-            <button class="btn-primary">Iniciar sesión nuevamente</button>
+        <a href="/login/sistema" class="log-link">
+            <button class="log-btn">Iniciar sesión nuevamente</button>
         </a>
     </div>
 
