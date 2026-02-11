@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis anuncios</title>
+    
     <link rel="stylesheet" href="/static/css/sanacion.css">
     <style>
         /* Cards grid for anuncios */
@@ -15,6 +18,12 @@
             z-index: 60;
             box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
+        .anuncios-container {
+            padding: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
         .container { padding: 8px; max-width: 100%; }
         .cards-grid {
             display: grid;
@@ -63,7 +72,9 @@
 </head>
 
 <body>
-    <div class="container">
+    
+    <div class="anuncios-container">
+
 
     <header class="anuncios-header">
         <h2 style="margin:0; padding-left:6px;">📢 Mis anuncios</h2>
