@@ -127,7 +127,8 @@ def generar_citas():
 # ------------------------------------------------------------
 @citas_admin_bp.route("/admin/ver_citas")
 def ver_citas():
-    return render_template("ver_citas.html")
+    terapeuta_nombre = session.get("Usuario", None)
+    return render_template("ver_citas.html", terapeuta_nombre=terapeuta_nombre)
 
 
 # ------------------------------------------------------------

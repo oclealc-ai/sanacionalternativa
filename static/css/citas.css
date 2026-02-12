@@ -1,0 +1,262 @@
+/* ================================================
+   CITAS CSS — ESTILOS PARA GENERACIÓN DE CITAS
+================================================ */
+
+/* ----------- ESTILO GLOBAL ----------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.citas-body {
+    font-family: "Poppins", "Segoe UI", sans-serif;
+    background: linear-gradient(to bottom, #4CAF50, #81C784);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* =========== CONTENEDOR PRINCIPAL =========== */
+.citas-container {
+    background: white;
+    max-width: 500px;
+    width: 100%;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.citas-h2 {
+    text-align: center;
+    margin: 0 0 25px 0;
+    font-size: 28px;
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+/* =========== ETIQUETAS =========== */
+.citas-label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin: 20px 0 8px 0;
+    color: #333;
+}
+
+/* =========== CAMPOS DE ENTRADA =========== */
+.citas-input,
+.citas-select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.citas-input:focus,
+.citas-select:focus {
+    border-color: #2e7d32;
+    box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+    outline: none;
+    background: white;
+}
+
+/* =========== BOTONES =========== */
+.citas-button {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    background: #388e3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
+}
+
+.citas-button:hover {
+    background: #2e7d32;
+    box-shadow: 0 6px 18px rgba(46, 125, 50, 0.4);
+    transform: translateY(-2px);
+}
+
+.citas-button:active {
+    transform: translateY(0);
+}
+
+/* =========== MENSAJES Y ALERTAS =========== */
+.citas-mensaje {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border-left: 4px solid;
+}
+
+.citas-success {
+    background: #c8e6c9;
+    color: #1b5e20;
+    border-left-color: #4CAF50;
+    border: 1px solid #a5d6a7;
+}
+
+.citas-error {
+    background: #ffcdd2;
+    color: #b71c1c;
+    border-left-color: #f44336;
+    border: 1px solid #ef9a9a;
+}
+
+/* =========== CALENDARIO =========== */
+.citas-calendar-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.citas-terapeuta-info {
+    background: rgba(76, 175, 80, 0.1);
+    border-left: 4px solid #4CAF50;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.citas-terapeuta-label {
+    color: #2e7d32;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.citas-terapeuta-label strong {
+    color: #1b5e20;
+    font-weight: 700;
+}
+
+.citas-calendar {
+    width: 100%;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+/* =========== RESPONSIVO =========== */
+@media (max-width: 600px) {
+    .citas-container {
+        padding: 20px;
+    }
+
+    .citas-h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .citas-label {
+        font-size: 13px;
+        margin: 15px 0 6px 0;
+    }
+
+    .citas-input,
+    .citas-select,
+    .citas-button {
+        padding: 11px 12px;
+        font-size: 13px;
+    }
+
+    .citas-button {
+        padding: 12px 15px;
+    }
+
+    .citas-mensaje {
+        font-size: 13px;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
+
+    .citas-calendar-container {
+        padding: 20px;
+    }
+
+    .citas-terapeuta-info {
+        margin-bottom: 20px;
+        padding: 12px;
+    }
+
+    .citas-terapeuta-label {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 380px) {
+    .citas-body {
+        padding: 10px;
+    }
+
+    .citas-container {
+        padding: 15px;
+    }
+
+    .citas-h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+
+    .citas-label {
+        font-size: 12px;
+        margin: 12px 0 5px 0;
+    }
+
+    .citas-input,
+    .citas-select {
+        padding: 10px;
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+
+    .citas-button {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .citas-mensaje {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .citas-calendar-container {
+        padding: 15px;
+        width: 95%;
+    }
+
+    .citas-h2 {
+        font-size: 18px;
+    }
+
+    .citas-terapeuta-info {
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+
+    .citas-terapeuta-label {
+        font-size: 12px;
+    }
+}

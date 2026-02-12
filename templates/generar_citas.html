@@ -4,124 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generar Citas</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #4CAF50, #81C784);
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            background: white;
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            color: #2e7d32;
-        }
-
-        label {
-            font-size: 1.2em;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 18px;
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 1px solid #bbb;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 18px;
-            font-size: 1.4em;
-            background: #388e3c;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        button:hover {
-            background: #2e7d32;
-        }
-
-        .mensaje {
-            text-align: center;
-            font-size: 1.2em;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .exito {
-            background: #c8e6c9;
-            color: #1b5e20;
-        }
-
-        .error {
-            background: #ffcdd2;
-            color: #b71c1c;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/citas.css">
 </head>
 
-<body>
+<body class="body">
 
-    <div class="container">
-        <h2>Generación de Citas</h2>
+    <div class="citas-container">
+        <h2 class="citas-h2">Generación de Citas</h2>
 
         {% if mensaje %}
-        <div class="mensaje {{ tipo }}">
+        <div class="citas-mensaje citas-{{ tipo }}">
             {{ mensaje }}
         </div>
         {% endif %}
 
         <form method="POST">
             
-            <label for="terapeuta">🧑‍⚕️ Seleccione Terapeuta:</label>
-            <select id="terapeuta" name="terapeuta" required>
+            <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
+            <select id="terapeuta" name="terapeuta" required class="citas-select">
                 <option value="">-- Seleccione --</option>
                 {% for t in terapeutas %}
                     <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
                 {% endfor %}
             </select>
             
-            <label for="mes">📅 Mes a generar:</label>
-            <input type="month" id="mes" name="mes" required>
+            <label for="mes" class="citas-label">📅 Mes a generar:</label>
+            <input type="month" id="mes" name="mes" required class="citas-input">
 
-            <label for="hora_inicio">⏰ Hora inicio:</label>
-            <input type="time" id="hora_inicio" name="hora_inicio" required>
+            <label for="hora_inicio" class="citas-label">⏰ Hora inicio:</label>
+            <input type="time" id="hora_inicio" name="hora_inicio" required class="citas-input">
 
-            <label for="hora_fin">⏰ Hora fin:</label>
-            <input type="time" id="hora_fin" name="hora_fin" required>
+            <label for="hora_fin" class="citas-label">⏰ Hora fin:</label>
+            <input type="time" id="hora_fin" name="hora_fin" required class="citas-input">
 
-            <label for="intervalo">🔁 Intervalo (minutos):</label>
-            <select id="intervalo" name="intervalo">
+            <label for="intervalo" class="citas-label">🔁 Intervalo (minutos):</label>
+            <select id="intervalo" name="intervalo" class="citas-select">
                 <option value="20">20 minutos</option>
                 <option value="30">30 minutos</option>
                 <option value="40" selected>40 minutos</option>
                 <option value="60">60 minutos</option>
             </select>
 
-            <button type="submit">GENERAR CITAS</button>
+            <button type="submit" class="citas-button">GENERAR CITAS</button>
 
         </form>
     </div>
