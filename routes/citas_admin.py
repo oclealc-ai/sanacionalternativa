@@ -21,6 +21,7 @@ def generar_citas():
 
     usuario = session.get("Usuario", None)  # usuario que generó la cita
     id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
+    terapeuta_nombre = session.get("NombreUsuario", None)  # nombre del admin logueado
     
     # -----------------------------
     # OBTENER TERAPEUTAS
@@ -119,7 +120,7 @@ def generar_citas():
 
     cursor.close()
     conn.close()
-    return render_template("generar_citas.html", terapeutas=terapeutas)
+    return render_template("generar_citas.html", terapeuta_nombre=terapeuta_nombre,terapeutas=terapeutas)
     
 
 # ------------------------------------------------------------

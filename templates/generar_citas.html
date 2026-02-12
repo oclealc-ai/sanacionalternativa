@@ -11,6 +11,12 @@
 <body class="body">
 
     <div class="citas-container">
+         {% if terapeuta_nombre %}
+            <div class="citas-terapeuta-info">
+                <p class="citas-terapeuta-label"> <strong>{{ terapeuta_nombre }}</strong></p>
+            </div>
+        {% endif %}
+
         <h2 class="citas-h2">Generación de Citas</h2>
 
         {% if mensaje %}
