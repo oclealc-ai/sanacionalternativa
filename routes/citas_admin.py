@@ -183,7 +183,8 @@ def lista_citas():
     fecha = request.args.get("fecha")
 
     usuario_logueado = session.get("Usuario")      # debe traer username
-    tipo_usuario = session.get("TipoUsuario")      # debe traer 'terapeuta' o 'admin'
+    tipo_usuario = session.get("tipoUsuario")      # debe traer 'terapeuta' o 'admin'
+    terapeuta_nombre = session.get("NombreUsuario") # nombre completo del usuario logueado
     id_empresa = session.get("idEmpresa")          # debe traer el idEmpresa del admin logueado
     
     conn = conectar_bd()
@@ -197,18 +198,31 @@ def lista_citas():
     """, (id_empresa,))
     terapeutas = cursor.fetchall()
 
-
-    cursor.execute("""
-    SELECT 
-        c.*,
-        p.NombrePaciente,
-        u.NombreUsuario AS NombreTerapeuta
-    FROM citas c
-    LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
-    LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
-    WHERE c.FechaCita = %s AND c.idEmpresa = %s 
-    ORDER BY c.HoraCita
-    """, (fecha, id_empresa))
+    # Si es terapeuta, filtrar por él mismo; si es admin, mostrar todas las citas
+    if tipo_usuario == 'terapeuta':
+        cursor.execute("""
+        SELECT 
+            c.*,
+            p.NombrePaciente,
+            u.NombreUsuario AS NombreTerapeuta
+        FROM citas c
+        LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
+        LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
+        WHERE c.FechaCita = %s AND c.idEmpresa = %s AND c.Terapeuta = %s
+        ORDER BY c.HoraCita
+        """, (fecha, id_empresa, usuario_logueado))
+    else:
+        cursor.execute("""
+        SELECT 
+            c.*,
+            p.NombrePaciente,
+            u.NombreUsuario AS NombreTerapeuta
+        FROM citas c
+        LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
+        LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
+        WHERE c.FechaCita = %s AND c.idEmpresa = %s 
+        ORDER BY c.HoraCita
+        """, (fecha, id_empresa))
 
     citas = cursor.fetchall()
 
@@ -221,6 +235,8 @@ def lista_citas():
         citas=citas,
         terapeutas=terapeutas,
         usuario_logueado=usuario_logueado if tipo_usuario == "terapeuta" else None,
+        terapeuta_nombre=terapeuta_nombre,
+        tipo_usuario=tipo_usuario,
         id_empresa=id_empresa
     )
     

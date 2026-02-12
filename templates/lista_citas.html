@@ -146,13 +146,19 @@ tr:nth-child(even) { background: #f2f2f2; }
     <!-- Barra de filtro por terapeuta -->
     <div class="filtro-barra">
         
-        <select id="filtroTerapeuta" onchange="filtrarTerapeuta()">
-            {% for t in terapeutas %}
-                <option value="{{ t.Usuario }}" {% if t.Usuario == usuario_logueado %}selected{% endif %}>
-                    {{ t.NombreUsuario }}
-                </option>
-            {% endfor %}
-        </select>
+        {% if tipo_usuario == 'admin' %}
+            <select id="filtroTerapeuta" onchange="filtrarTerapeuta()">
+                {% for t in terapeutas %}
+                    <option value="{{ t.Usuario }}">
+                        {{ t.NombreUsuario }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <!-- Para terapeutas: mostrar solo el nombre sin selector -->
+            <p style="margin: 0; font-weight: bold;">🧑‍⚕️ {{ terapeuta_nombre }}</p>
+            <input type="hidden" id="filtroTerapeuta" value="{{ usuario_logueado }}">
+        {% endif %}
     </div>
 
     {% if citas %}
