@@ -22,7 +22,7 @@ def generar_citas():
     usuario = session.get("Usuario", None)  # usuario que generó la cita
     id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
     terapeuta_nombre = session.get("NombreUsuario", None)  # nombre del admin logueado
-    tipo_usuario = session.get("TipoUsuario", None)  # tipo: 'admin' o 'terapeuta'
+    tipo_usuario = session.get("tipoUsuario", None)  # tipo: 'admin' o 'terapeuta'
     
     # -----------------------------
     # OBTENER TERAPEUTAS
