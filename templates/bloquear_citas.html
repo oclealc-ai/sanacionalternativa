@@ -4,58 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bloquear Citas</title>
-<style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
-    .container { max-width: 800px; margin: auto; padding: 20px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-radius: 8px; }
-    h1 { text-align: center; color: #333; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input[type="date"] { padding: 8px; width: 100%; max-width: 200px; margin-top: 5px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; font-size: 14px; }
-    th { background-color: #007BFF; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    .actions { margin-top: 15px; display: flex; justify-content: space-between; flex-wrap: wrap; }
-    .btn { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    .btn-bloquear { background-color: #FF6B6B; color: #fff; }
-    .btn-bloquear:hover { background-color: #e55a5a; }
-    .mensaje { margin-top: 10px; color: #333; text-align: center; }
-    @media(max-width:600px){
-        th, td { font-size: 12px; padding: 6px; }
-        .actions { flex-direction: column; align-items: center; }
-        input[type="date"] { width: 100%; }
-    }
-</style>
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/citas.css">
 </head>
-<body>
+<body class="citas-body">
 
-<div class="container">
-    <h1>Bloquear Citas</h1>
+<div class="citas-container">
 
-    <label for="fecha">Selecciona el día:</label>
-    <input type="date" id="fecha" onchange="cargarCitas()">
+    {% if terapeuta_nombre %}
+        <div class="citas-terapeuta-info">
+            <p class="citas-terapeuta-label"> <strong>{{ terapeuta_nombre }}</strong></p>
+        </div>
+    {% elif usuario %}
+        <div class="citas-terapeuta-info">
+            <p class="citas-terapeuta-label"> <strong>{{ usuario }}</strong></p>
+        </div>
+    {% endif %}
+
+    <h2 class="citas-h2">Bloquear Citas</h2>
+
+    {% if tipo_usuario == 'admin' %}
+        <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
+        <select id="terapeuta" name="terapeuta" class="citas-select">
+            <option value="">-- Seleccione --</option>
+            {% for t in terapeutas %}
+                <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
+            {% endfor %}
+        </select>
+    {% else %}
+        <input type="hidden" name="terapeuta" value="{{ usuario }}">
+    {% endif %}
+
+    <label for="fecha" class="citas-label">Selecciona el día:</label>
+    <input type="date" id="fecha" onchange="cargarCitas()" class="citas-input">
 
     <div class="actions">
-        <label>
+        <label class="citas-label" style="margin:0; font-weight:400;">
             <input type="checkbox" id="bloquear_dia" onchange="marcarTodo()"> Bloquear todo el día
         </label>
-        <button class="btn btn-bloquear" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
+        <button class="citas-button" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
     </div>
 
-    <div class="mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
+    <div class="citas-mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Hora</th>
-                <th>Paciente</th>
-                <th>Estatus</th>
-                <th>Seleccionar</th>
-            </tr>
-        </thead>
-        <tbody id="cuerpo-citas">
-            <tr><td colspan="4" style="text-align:center;">Selecciona una fecha para ver las citas</td></tr>
-        </tbody>
-    </table>
+    <div class="citas-calendar-container">
+        <div class="citas-calendar">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Paciente</th>
+                        <th>Estatus</th>
+                        <th>Seleccionar</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-citas">
+                    <tr><td colspan="4" style="text-align:center;">Selecciona una fecha para ver las citas</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
