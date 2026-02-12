@@ -1,55 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bloquear Citas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Citas</title>
     <link rel="stylesheet" href="/static/css/global.css">
     <link rel="stylesheet" href="/static/css/citas.css">
 </head>
-<body class="citas-body">
+
+<body class="body">
 
 <div class="citas-container">
-
     {% if terapeuta_nombre %}
         <div class="citas-terapeuta-info">
             <p class="citas-terapeuta-label"> <strong>{{ terapeuta_nombre }}</strong></p>
         </div>
-    {% elif usuario %}
-        <div class="citas-terapeuta-info">
-            <p class="citas-terapeuta-label"> <strong>{{ usuario }}</strong></p>
-        </div>
     {% endif %}
 
-    <h2 class="citas-h2">Bloquear Citas</h2>
+    <h2 class="citas-h2">Bloqueo de Citas</h2>
 
-    {% if tipo_usuario == 'admin' %}
-        <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
-        <select id="terapeuta" name="terapeuta" class="citas-select">
-            <option value="">-- Seleccione --</option>
-            {% for t in terapeutas %}
-                <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
-            {% endfor %}
-        </select>
-    {% else %}
-        <input type="hidden" name="terapeuta" value="{{ usuario }}">
-    {% endif %}
-
-    <label for="fecha" class="citas-label">Selecciona el día:</label>
-    <input type="date" id="fecha" onchange="cargarCitas()" class="citas-input">
-
-    <div class="actions">
-        <label class="citas-label" style="margin:0; font-weight:400;">
-            <input type="checkbox" id="bloquear_dia" onchange="marcarTodo()"> Bloquear todo el día
-        </label>
-        <button class="citas-button" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
+    {% if mensaje %}
+    <div class="citas-mensaje citas-{{ tipo }}">
+        {{ mensaje }}
     </div>
+    {% endif %}
 
-    <div class="citas-mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
+    <form method="POST">
+            
+            {% if tipo_usuario == 'admin' %}
+                <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
+                <select id="terapeuta" name="terapeuta" required class="citas-select">
+                    <option value="">-- Seleccione --</option>
+                    {% for t in terapeutas %}
+                        <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <!-- Para terapeutas: el terapeuta es el logueado, se envía automáticamente -->
+                <input type="hidden" name="terapeuta" value="{{ usuario }}">
+                <p class="citas-label">🧑‍⚕️ Terapeuta: <strong>{{ terapeuta_nombre }}</strong></p>
+            {% endif %}
+            
+            <div class="citas-mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
 
-    <div class="citas-calendar-container">
-        <div class="citas-calendar">
-            <table style="width:100%; border-collapse:collapse;">
+            <label class="citas-label" for="fecha">Selecciona el día:</label>
+            <input type="date" id="fecha" class="citas-input" onchange="cargarCitas()">
+
+            <div class="actions">
+                <label>
+                    <input type="checkbox" class="citas-input" id="bloquear_dia" onchange="marcarTodo()"> Bloquear todo el día
+                </label>
+                <button class="citas-button" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
+            </div>
+
+            
+
+            <table>
                 <thead>
                     <tr>
                         <th>Hora</th>
@@ -62,9 +68,7 @@
                     <tr><td colspan="4" style="text-align:center;">Selecciona una fecha para ver las citas</td></tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-
+    </form>
 </div>
 
 <script>
