@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú Administrador</title>
 
-    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/global.css">
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <style>
@@ -100,6 +100,18 @@
         <h3>Menú del Administrador</h3>
 
         <div class="menu-opciones">
+            <button class="menu-btn" onclick="window.location.href='/admin/generar_citas'">
+                📅 Generar Citas
+            </button>
+
+            <button class="menu-btn" onclick="window.location.href='/admin/ver_citas'">
+                📘 Ver Calendario de Citas
+            </button>
+
+            <button class="menu-btn" onclick="window.location.href='/admin/bloquear_citas'">
+                🛑 Bloquear Citas
+            </button>
+
             <button class="menu-btn" onclick="window.location.href='/admin/usuarios'">
                 Gestión de Usuarios
             </button>

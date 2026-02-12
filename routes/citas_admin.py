@@ -22,6 +22,7 @@ def generar_citas():
     usuario = session.get("Usuario", None)  # usuario que generó la cita
     id_empresa = session.get("idEmpresa", None)  # empresa del admin logueado
     terapeuta_nombre = session.get("NombreUsuario", None)  # nombre del admin logueado
+    tipo_usuario = session.get("TipoUsuario", None)  # tipo: 'admin' o 'terapeuta'
     
     # -----------------------------
     # OBTENER TERAPEUTAS
@@ -52,6 +53,9 @@ def generar_citas():
             return render_template("generar_citas.html",
                                    mensaje="❌ Debes seleccionar un mes futuro o el mes actual.",
                                    tipo="error",
+                                   usuario=usuario,
+                                   terapeuta_nombre=terapeuta_nombre,
+                                   tipo_usuario=tipo_usuario,
                                    terapeutas=terapeutas)
 
         primer_dia = datetime(anio, mes_num, 1)
@@ -116,11 +120,14 @@ def generar_citas():
         return render_template("generar_citas.html",
                                mensaje=f"✔ Se generaron {total_creadas} citas.",
                                tipo="success",
+                               usuario=usuario,
+                               terapeuta_nombre=terapeuta_nombre,
+                               tipo_usuario=tipo_usuario,
                                terapeutas=terapeutas)
 
     cursor.close()
     conn.close()
-    return render_template("generar_citas.html", terapeuta_nombre=terapeuta_nombre,terapeutas=terapeutas)
+    return render_template("generar_citas.html", usuario=usuario, terapeuta_nombre=terapeuta_nombre, tipo_usuario=tipo_usuario, terapeutas=terapeutas)
     
 
 # ------------------------------------------------------------

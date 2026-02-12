@@ -27,13 +27,19 @@
 
         <form method="POST">
             
-            <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
-            <select id="terapeuta" name="terapeuta" required class="citas-select">
-                <option value="">-- Seleccione --</option>
-                {% for t in terapeutas %}
-                    <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
-                {% endfor %}
-            </select>
+            {% if tipo_usuario == 'admin' %}
+                <label for="terapeuta" class="citas-label">🧑‍⚕️ Seleccione Terapeuta:</label>
+                <select id="terapeuta" name="terapeuta" required class="citas-select">
+                    <option value="">-- Seleccione --</option>
+                    {% for t in terapeutas %}
+                        <option value="{{ t.Usuario }}">{{ t.NombreUsuario }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <!-- Para terapeutas: el terapeuta es el logueado, se envía automáticamente -->
+                <input type="hidden" name="terapeuta" value="{{ usuario }}">
+                <p class="citas-label">🧑‍⚕️ Terapeuta: <strong>{{ terapeuta_nombre }}</strong></p>
+            {% endif %}
             
             <label for="mes" class="citas-label">📅 Mes a generar:</label>
             <input type="month" id="mes" name="mes" required class="citas-input">
