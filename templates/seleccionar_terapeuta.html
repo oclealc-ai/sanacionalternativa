@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Terapeuta</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/paciente.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+
+<body>
+
+<div class="menu-wrapper">
+    <div class="menu-card">
+
+        <div class="empresa-name">
+            {{ empresa }}
+        </div>
+
+        <div class="usuario-info">
+            {{ NombrePaciente }}
+        </div>
+
+        <div class="tipo-usuario">
+            Paciente
+        </div>
+
+        <div class="seccion-titulo">
+            Selecciona un Terapeuta
+        </div>
+
+        <div class="terapeuta-list">
+            {% if terapeutas %}
+                {% for terapeuta in terapeutas %}
+                    <button class="terapeuta-btn" onclick="window.location.href='/paciente/calendario_terapeuta?idTerapeuta={{ terapeuta['IdUsuario'] }}'">
+                        👤 {{ terapeuta['NombreUsuario'] }}
+                    </button>
+                {% endfor %}
+            {% else %}
+                <p style="color: #999; font-size: 14px;">No hay terapeutas disponibles en este momento.</p>
+            {% endif %}
+        </div>
+
+        <button class="enlace-atras" onclick="window.location.href='/paciente/menu'">
+            ← Volver al menú
+        </button>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+/* ============================================================
+   ESTILOS PARA PANTALLAS DE PACIENTES
+   ============================================================ */
+
+/* ESTILOS BASE */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ESTRUCTURA DE MENÚ */
+.menu-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.menu-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 18px;
+    padding: 35px 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+/* ENCABEZADOS Y TÍTULOS */
+.empresa-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.usuario-info {
+    font-size: 24px;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 8px;
+}
+
+.tipo-usuario {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.seccion-titulo {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f3d36;
+    margin-bottom: 20px;
+    margin-top: 15px;
+}
+
+/* SALDO */
+.saldo-box {
+    background: #f0f8f5;
+    border-left: 4px solid #28a745;
+    padding: 14px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.saldo-label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.saldo-valor {
+    font-size: 24px;
+    font-weight: 700;
+    color: #28a745;
+}
+
+/* MENÚ DE OPCIONES */
+.menu-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-btn {
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: #28a745;
+    color: white;
+    transition: all 0.25s ease;
+}
+
+.menu-btn:hover {
+    background: #1e7e34;
+    transform: translateY(-2px);
+}
+
+.logout-btn {
+    margin-top: 30px;
+    background: #dc3545;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+/* SELECCIÓN DE TERAPEUTAS */
+.terapeuta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.terapeuta-btn {
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 10px;
+    border: 2px solid #28a745;
+    cursor: pointer;
+    background: #ffffff;
+    color: #28a745;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.terapeuta-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* ENLACES Y BOTONES SECUNDARIOS */
+.enlace-atras {
+    margin-top: 25px;
+    padding: 12px;
+    font-size: 14px;
+    background: #e9ecef;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.enlace-atras:hover {
+    background: #dee2e6;
+    color: #333;
+}
+
+/* CALENDARIO */
+.container-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.header-info {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 20px;
+}
+
+.empresa-header {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 8px;
+}
+
+.terapeuta-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 8px;
+}
+
+.paciente-header {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.instrucciones {
+    font-size: 14px;
+    color: #666;
+    font-style: italic;
+}
+
+#calendar {
+    margin: 20px 0;
+}
+
+.boton-volver {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.boton-volver a {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #e9ecef;
+    color: #666;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.boton-volver a:hover {
+    background: #dee2e6;
+    color: #333;
+}

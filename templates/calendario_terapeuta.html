@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona una Fecha</title>
+
+    <link rel="stylesheet" href="/static/css/sanacion.css">
+    <link rel="stylesheet" href="/static/css/paciente.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <style>
+        body {
+            padding: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-wrapper">
+    
+    <div class="header-info">
+        <div class="empresa-header">
+            {{ empresa }}
+        </div>
+        
+        <div class="terapeuta-header">
+            👤 {{ terapeuta }}
+        </div>
+        
+        <div class="paciente-header">
+            {{ NombrePaciente }}
+        </div>
+        
+        <div class="instrucciones">
+            Selecciona una fecha para ver las citas disponibles
+        </div>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div class="boton-volver">
+        <a href="/paciente/menu_citas">← Seleccionar otro terapeuta</a>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    let calendarEl = document.getElementById("calendar");
+
+    let hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "es",
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth'
+        },
+
+        validRange: {
+            start: hoy
+        },
+
+        dateClick: function(info) {
+            window.location.href = "/paciente/citas_disponibles?fecha=" + info.dateStr + "&terapeuta=" + "{{ usuarioTerapeuta }}";
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+</body>
+</html>

@@ -14,22 +14,28 @@ def menu_principal_paciente_empresa(idEmpresa):
     if "idPaciente" not in session or session.get("idEmpresa") != idEmpresa:
         return redirect(f"/empresa/{idEmpresa}/paciente/login")
     
-    # Obtener el nombre de la empresa de la BD
+    # Obtener el nombre de la empresa y saldo del paciente de la BD
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
     empresa_row = cursor.fetchone()
+    
+    cursor.execute("SELECT Saldo FROM paciente WHERE idPaciente=%s", (session.get("idPaciente"),))
+    paciente_row = cursor.fetchone()
+    
     cursor.close()
     conn.close()
     
     empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
+    saldo = paciente_row["Saldo"] if paciente_row else 0.00
     
     return render_template(
         "menu_paciente.html",
         NombrePaciente=session.get("NombrePaciente", "Paciente"),
         idPaciente=session.get("idPaciente"),
         idEmpresa=idEmpresa,
-        empresa=empresa_nombre)
+        empresa=empresa_nombre,
+        saldo=saldo)
 
 # 🔄 RUTA ANTIGUA: mantener por compatibilidad (redirige a la nueva)
 @citas_paciente_bp.route("/paciente/menu")
@@ -51,12 +57,65 @@ def menu_citas():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
     empresa_row = cursor.fetchone()
+    
+    # Obtener lista de terapeutas disponibles
+    cursor.execute("""
+        SELECT IdUsuario, NombreUsuario 
+        FROM usuarios 
+        WHERE idEmpresa = %s AND TipoUsuario = 'terapeuta'
+        ORDER BY NombreUsuario
+    """, (idEmpresa,))
+    terapeutas = cursor.fetchall()
+    
     cursor.close()
     conn.close()
     
     empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
     
-    return render_template("calendario_paciente.html", empresa=empresa_nombre)
+    return render_template(
+        "seleccionar_terapeuta.html",
+        empresa=empresa_nombre,
+        terapeutas=terapeutas,
+        NombrePaciente=session.get("NombrePaciente", "Paciente")
+    )
+
+
+@citas_paciente_bp.route("/paciente/calendario_terapeuta")
+def calendario_terapeuta():
+    """Muestra el calendario filtrado para un terapeuta específico"""
+    idEmpresa = session.get("idEmpresa")
+    idTerapeuta = request.args.get("idTerapeuta")
+    
+    if not idTerapeuta:
+        return redirect("/paciente/menu_citas")
+    
+    # Obtener datos de la empresa y terapeuta
+    conn = conectar_bd()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
+    empresa_row = cursor.fetchone()
+    
+    cursor.execute(
+        "SELECT Usuario, NombreUsuario FROM usuarios WHERE idUsuario=%s AND idEmpresa=%s",
+        (idTerapeuta, idEmpresa)
+    )
+    terapeuta_row = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    if not empresa_row or not terapeuta_row:
+        return redirect("/paciente/menu_citas")
+    
+    return render_template(
+        "calendario_terapeuta.html",
+        empresa=empresa_row["RazonSocial"],
+        terapeuta=terapeuta_row["NombreUsuario"],
+        usuarioTerapeuta=terapeuta_row["Usuario"],
+        idTerapeuta=idTerapeuta,
+        NombrePaciente=session.get("NombrePaciente", "Paciente")
+    )
 
 
 @citas_paciente_bp.route("/paciente/mis_citas")
