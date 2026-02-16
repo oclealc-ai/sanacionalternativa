@@ -2,16 +2,15 @@
    CITAS CSS — ESTILOS PARA GENERACIÓN DE CITAS
 ================================================ */
 
-/* ----------- ESTILO GLOBAL ----------- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-.citas-body {
+
+
+/* ----------- ESTILO GLOBAL ----------- */
+
+.citas-body * {
+    box-sizing: border-box;
+    background: url('/static/img/fondo01.jpg') no-repeat center center fixed;
     font-family: "Poppins", "Segoe UI", sans-serif;
-    background: linear-gradient(to bottom, #4CAF50, #81C784);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -159,6 +158,26 @@
     box-sizing: border-box;
 }
 
+.citas-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.citas-table th,
+.citas-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+.citas-table th {
+    background-color: #007BFF;
+    color: white;
+}
+.citas-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
 /* =========== RESPONSIVO =========== */
 @media (max-width: 600px) {
     .citas-container {
@@ -171,7 +190,7 @@
     }
 
     .citas-label {
-        font-size: 13px;
+        font-size: 12px;
         margin: 15px 0 6px 0;
     }
 
@@ -187,10 +206,10 @@
     }
 
     .citas-mensaje {
-        font-size: 13px;
+        font-size: 14px;
         padding: 12px;
-        margin-bottom: 20px;
     }
+ 
 
     .citas-calendar-container {
         padding: 20px;
@@ -258,5 +277,82 @@
 
     .citas-terapeuta-label {
         font-size: 12px;
+    }
+}
+
+/* ===== CLASES PARA BLOQUEAR CITAS ===== */
+.citas-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.citas-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.citas-btn-bloquear {
+    background-color: #FF6B6B;
+    color: #fff;
+}
+
+.citas-btn-bloquear:hover {
+    background-color: #e55a5a;
+}
+
+.citas-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.citas-table th,
+.citas-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.citas-table th {
+    background-color: #007BFF;
+    color: white;
+}
+
+.citas-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.citas-check-cita {
+    cursor: pointer;
+}
+
+.citas-check-cita:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ===== RESPONSIVO PARA ACCIONES ===== */
+@media(max-width:600px) {
+    .citas-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .citas-table th,
+    .citas-table td {
+        font-size: 12px;
+        padding: 6px;
+    }
+
+    .citas-btn {
+        width: 100%;
     }
 }
