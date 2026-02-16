@@ -15,6 +15,25 @@
             padding-top: 20px;
         }
 
+        .usuario-info {
+            font-size: 24px;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 8px;
+        }
+
+        .tipo-usuario {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .empresa-name {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 30px;
+        }
 
         .menu-btn {
             display: block;
@@ -32,11 +51,6 @@
         .menu-btn:hover {
             background: #1e7e34;
         }
-
-        h2 {
-            margin-bottom: 30px;
-            color: #28a745;
-        }
     </style>
 </head>
 
@@ -44,7 +58,17 @@
 
 <div class="container menu-container">
     
-    <h2>Bienvenido <br> {{ NombrePaciente }} <br> {{ empresa }}</h2>
+    <div class="usuario-info">
+        {{ NombrePaciente }}
+    </div>
+
+    <div class="tipo-usuario">
+        Paciente
+    </div>
+
+    <div class="empresa-name">
+        {{ empresa }}
+    </div>
 
 
     <button class="menu-btn" onclick="window.location.href='/paciente/menu_citas'">

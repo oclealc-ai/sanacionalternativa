@@ -48,10 +48,24 @@
             letter-spacing: 0.5px;
         }
 
-        h1 {
-            font-size: 26px;
-            margin: 10px 0 15px;
+        .usuario-info {
+            font-size: 24px;
+            font-weight: 700;
             color: #1f3d36;
+            margin-bottom: 8px;
+        }
+
+        .tipo-usuario {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        h1 {
+            font-size: 16px;
+            margin: 0 0 15px;
+            color: #999;
         }
 
         .menu-opciones {
@@ -93,11 +107,17 @@
 <div class="menu-wrapper">
     <div class="menu-card">
 
+        <div class="usuario-info">
+            {{ nombre }}
+        </div>
+
+        <div class="tipo-usuario">
+            Administrador
+        </div>
+
         <div class="empresa">
             {{ empresa }}
         </div>
-
-        <h3>Menú del Administrador</h3>
 
         <div class="menu-opciones">
             <button class="menu-btn" onclick="window.location.href='/admin/generar_citas'">

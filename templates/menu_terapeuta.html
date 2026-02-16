@@ -48,10 +48,24 @@
             letter-spacing: 0.5px;
         }
 
-        h3 {
-            font-size: 22px;
-            margin: 10px 0 25px;
+        .usuario-info {
+            font-size: 24px;
+            font-weight: 700;
             color: #1f3d36;
+            margin-bottom: 8px;
+        }
+
+        .tipo-usuario {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        h3 {
+            font-size: 16px;
+            margin: 0 0 15px;
+            color: #999;
         }
 
         .menu-opciones {
@@ -92,11 +106,17 @@
 <div class="menu-wrapper">
     <div class="menu-card">
 
+        <div class="usuario-info">
+            {{ nombre }}
+        </div>
+
+        <div class="tipo-usuario">
+            Terapeuta
+        </div>
+
         <div class="empresa">
             {{ empresa }}
         </div>
-
-        <h3>Menú del Terapeuta</h3>
 
         <div class="menu-opciones">
             <button class="menu-btn" onclick="window.location.href='/admin/generar_citas'">
