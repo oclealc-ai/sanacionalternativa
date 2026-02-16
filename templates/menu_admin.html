@@ -40,12 +40,12 @@
         }
 
         .empresa {
-            font-size: 20px;
-            font-weight: 600;
-            color: #4a6f64;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: none;
+            letter-spacing: 0px;
         }
 
         .usuario-info {
@@ -58,7 +58,7 @@
         .tipo-usuario {
             font-size: 18px;
             color: #666;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
             font-weight: 500;
         }
 
@@ -107,16 +107,16 @@
 <div class="menu-wrapper">
     <div class="menu-card">
 
+        <div class="empresa">
+            {{ empresa }}
+        </div>
+
         <div class="usuario-info">
             {{ nombre }}
         </div>
 
         <div class="tipo-usuario">
             Administrador
-        </div>
-
-        <div class="empresa">
-            {{ empresa }}
         </div>
 
         <div class="menu-opciones">
