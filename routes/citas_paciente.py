@@ -79,35 +79,37 @@ def menu_citas():
         NombrePaciente=session.get("NombrePaciente", "Paciente")
     )
 
-
 @citas_paciente_bp.route("/paciente/calendario_terapeuta")
 def calendario_terapeuta():
-    """Muestra el calendario filtrado para un terapeuta específico"""
     idEmpresa = session.get("idEmpresa")
     idTerapeuta = request.args.get("idTerapeuta")
-    
+
     if not idTerapeuta:
         return redirect("/paciente/menu_citas")
-    
-    # Obtener datos de la empresa y terapeuta
+
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
-    
+
     cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
     empresa_row = cursor.fetchone()
-    
+
     cursor.execute(
         "SELECT Usuario, NombreUsuario FROM usuarios WHERE idUsuario=%s AND idEmpresa=%s",
         (idTerapeuta, idEmpresa)
     )
     terapeuta_row = cursor.fetchone()
-    
+
     cursor.close()
     conn.close()
-    
+
     if not empresa_row or not terapeuta_row:
         return redirect("/paciente/menu_citas")
-    
+
+    # 🔒 GUARDAR EN SESIÓN DESPUÉS de obtenerlo
+    session["idTerapeuta"] = idTerapeuta
+    session["usuarioTerapeuta"] = terapeuta_row["Usuario"]
+    session["nombreTerapeuta"] = terapeuta_row["NombreUsuario"]
+
     return render_template(
         "calendario_terapeuta.html",
         empresa=empresa_row["RazonSocial"],
@@ -151,40 +153,31 @@ def mis_citas():
     return render_template("mis_citas.html", citas=citas)
 
 
-
 @citas_paciente_bp.route("/paciente/citas_disponibles")
 def citas_disponibles():
     fecha = request.args.get("fecha")
-    terapeuta_sel = request.args.get("terapeuta") 
     id_empresa = session.get("idEmpresa")
-    
+
+    usuario_terapeuta = session.get("usuarioTerapeuta")
+    nombre_terapeuta = session.get("nombreTerapeuta")
+
+    if not usuario_terapeuta:
+        return redirect("/paciente/menu_citas")
+
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT Usuario, NombreUsuario
-        FROM usuarios
-        WHERE TipoUsuario = 'terapeuta' AND idEmpresa = %s
-        ORDER BY NombreUsuario
-    """, (id_empresa,))
-    terapeutas = cursor.fetchall()
-    
     sql = """
         SELECT idCita, HoraCita, Terapeuta
         FROM citas
-        WHERE FechaCita = %s AND idEmpresa = %s
+        WHERE FechaCita = %s
+          AND idEmpresa = %s
           AND Estatus = 'Disponible'
+          AND Terapeuta = %s
+        ORDER BY HoraCita
     """
-    params = [fecha, id_empresa]
 
-    if terapeuta_sel:
-        sql += " AND Terapeuta = %s"
-        params.append(terapeuta_sel)
-
-    sql += " ORDER BY HoraCita"
-
-    cursor.execute(sql, tuple(params))
-
+    cursor.execute(sql, (fecha, id_empresa, usuario_terapeuta))
     citas = cursor.fetchall()
 
     cursor.close()
@@ -194,8 +187,8 @@ def citas_disponibles():
         "lista_citas_paciente.html",
         fecha=fecha,
         citas=citas,
-        terapeutas=terapeutas,       # ← para el select
-        terapeuta_sel=terapeuta_sel, # ← para dejar seleccionado
+        nombreTerapeuta=nombre_terapeuta,
+        idTerapeuta=session.get("idTerapeuta"),
         idPaciente=session.get("idPaciente")
     ))
 
@@ -204,6 +197,7 @@ def citas_disponibles():
     resp.headers['Expires'] = '0'
 
     return resp
+
 
 # -------------------------------------------------------
 # Reservar Cita

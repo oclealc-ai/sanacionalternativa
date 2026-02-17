@@ -28,27 +28,15 @@
     <span style="display:block; color:#007bff; font-size:1.2em;">{{ fecha }}</span>
 </div>
 
+<div style="text-align:center; font-size:1.1em; margin-bottom:15px;">
+    Terapeuta:
+    <span style="color:#007bff; font-weight:bold;">
+        {{ nombreTerapeuta }}
+    </span>
+</div>
+
+
 <a class="btn-volver" href="/paciente/mis_citas">← Volver a Mis Citas</a>
-
-<form method="GET" action="" style="margin-bottom:15px; text-align:center; font-size:1.1em;">
-    <input type="hidden" name="fecha" value="{{ fecha }}">
-
-    <label for="terapeuta" style="font-weight:bold; margin-right:10px;">
-        Filtrar por terapeuta:
-    </label>
-
-    <select name="terapeuta" id="terapeuta" onchange="this.form.submit()"
-            style="padding:8px 12px; font-size:1.1em; border-radius:6px; border:1px solid #ccc; min-width:220px;">
-        <option value="">-- Todos --</option>
-
-        {% for t in terapeutas %}
-            <option value="{{ t.Usuario }}"
-                {% if terapeuta_sel == t.Usuario %}selected{% endif %}>
-                {{ t.NombreUsuario }}
-            </option>
-        {% endfor %}
-    </select>
-</form>
 
 <div class="content">
     {% if citas %}
