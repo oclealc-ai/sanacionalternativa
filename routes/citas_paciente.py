@@ -155,12 +155,13 @@ def mis_citas():
 
 @citas_paciente_bp.route("/paciente/citas_disponibles")
 def citas_disponibles():
-    fecha = request.args.get("fecha")
-    id_empresa = session.get("idEmpresa")
-
+    
+    id_empresa        = session.get("idEmpresa")
     usuario_terapeuta = session.get("usuarioTerapeuta")
-    nombre_terapeuta = session.get("nombreTerapeuta")
+    nombre_terapeuta  = session.get("nombreTerapeuta")
 
+    fecha             = request.args.get("fecha")
+    
     if not usuario_terapeuta:
         return redirect("/paciente/menu_citas")
 
@@ -191,10 +192,6 @@ def citas_disponibles():
         idTerapeuta=session.get("idTerapeuta"),
         idPaciente=session.get("idPaciente")
     ))
-
-    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-    resp.headers['Pragma'] = 'no-cache'
-    resp.headers['Expires'] = '0'
 
     return resp
 
