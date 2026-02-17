@@ -58,6 +58,8 @@ def menu_citas():
     cursor.execute("SELECT RazonSocial FROM Empresa WHERE idEmpresa=%s", (idEmpresa,))
     empresa_row = cursor.fetchone()
     
+    empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
+    
     # Obtener lista de terapeutas disponibles
     cursor.execute("""
         SELECT IdUsuario, NombreUsuario 
@@ -69,8 +71,6 @@ def menu_citas():
     
     cursor.close()
     conn.close()
-    
-    empresa_nombre = empresa_row["RazonSocial"] if empresa_row else "Empresa"
     
     return render_template(
         "seleccionar_terapeuta.html",

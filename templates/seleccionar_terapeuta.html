@@ -30,7 +30,7 @@
         <div class="terapeuta-list">
             {% if terapeutas %}
                 {% for terapeuta in terapeutas %}
-                    <button class="terapeuta-btn" onclick="window.location.href='/paciente/calendario_terapeuta?idTerapeuta={{ terapeuta['idUsuario'] }}'">
+                    <button class="terapeuta-btn" onclick="window.location.href='/paciente/calendario_terapeuta?idTerapeuta={{ terapeuta.IdUsuario }}'">
                         👤 {{ terapeuta['NombreUsuario'] }}
                     </button>
                 {% endfor %}
