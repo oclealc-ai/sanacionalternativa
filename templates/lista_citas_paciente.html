@@ -44,7 +44,6 @@
         <thead>
             <tr>
                 <th>Hora</th>
-                <th>Terapeuta</th>
                 <th>Acción</th>
             </tr>
         </thead>
@@ -52,7 +51,6 @@
             {% for c in citas %}
             <tr>
                 <td>{{ c.HoraCita }}</td>
-                <td>{{ c.Terapeuta }}</td>
                 <td>
                     <form action="/paciente/reservar_cita" method="POST" style="margin:0;">
                         <input type="hidden" name="idCita" value="{{ c.idCita }}">
