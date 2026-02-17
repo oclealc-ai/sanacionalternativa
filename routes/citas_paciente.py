@@ -189,6 +189,7 @@ def citas_disponibles():
         fecha=fecha,
         citas=citas,
         nombreTerapeuta=nombre_terapeuta,
+        usuarioTerapeuta=usuario_terapeuta,
         idTerapeuta=session.get("idTerapeuta"),
         idPaciente=session.get("idPaciente")
     ))
