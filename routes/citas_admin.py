@@ -39,7 +39,9 @@ def generar_citas():
     # -----------------------------
     
     idCreada = EstatusCita.id_estatus("Creada")
-    
+    if not idCreada:
+        raise ValueError("El estatus 'Creada' no existe en la base de datos")
+
     logger.warning(f"id_empresa: {id_empresa}")
     
     if request.method == "POST":
