@@ -1,7 +1,8 @@
-from flask import Blueprint, request, render_template, redirect, url_for, session
+from flask    import Blueprint, request, render_template, redirect, url_for, session
 from database import conectar_bd
-from flask import make_response
+from flask    import make_response
 from datetime import datetime
+from modelos  import EstatusCita
 
 citas_paciente_bp = Blueprint("citas_paciente", __name__)
 
@@ -133,7 +134,7 @@ def mis_citas():
             c.idCita,
             c.FechaCita,
             c.HoraCita,
-            c.Estatus,
+            c.idEstatus,
             c.Para,
             u.NombreUsuario AS NombreTerapeuta
         FROM citas c
@@ -141,7 +142,7 @@ def mis_citas():
         WHERE c.idPaciente = %s
           AND c.idEmpresa = %s
           AND c.FechaCita >= CURDATE()
-          AND c.Estatus IN ('Reservada', 'Confirmada', 'Cancelada')
+          AND c.idEstatus IN (7, 3, 5)  -- Reservada, Confirmada, Cancelada
         ORDER BY c.FechaCita, c.HoraCita
     """, (idPaciente, id_empresa))
 
@@ -165,6 +166,8 @@ def citas_disponibles():
     if not usuario_terapeuta:
         return redirect("/paciente/menu_citas")
 
+    idDisponible = EstatusCita.id_estatus("Disponible")
+    
     conn = conectar_bd()
     cursor = conn.cursor(dictionary=True)
 
@@ -173,12 +176,12 @@ def citas_disponibles():
         FROM citas
         WHERE FechaCita = %s
           AND idEmpresa = %s
-          AND Estatus = 'Disponible'
+          AND idEstatus = %s
           AND Terapeuta = %s
         ORDER BY HoraCita
     """
 
-    cursor.execute(sql, (fecha, id_empresa, usuario_terapeuta))
+    cursor.execute(sql, (fecha, id_empresa, idDisponible, usuario_terapeuta))
     citas = cursor.fetchall()
 
     cursor.close()
@@ -242,15 +245,17 @@ def reservar_cita():
     id_empresa = session.get("idEmpresa")
     
     tipo = request.form.get("tipo", "")  # <-- aquí recuperamos “confirmar / cancelar / reagendar”
-
+    
+    idReservada = EstatusCita.id_estatus("Reservada")
+    
     conn = conectar_bd()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE citas
-        SET Estatus = 'Reservada', idPaciente = %s, FechaSolicitud = NOW(), Para = %s   
-        WHERE idCita = %s AND idEmpresa = %s AND Estatus IN ('Disponible', 'Reservada')
-    """, (id_paciente, para, id_cita, id_empresa))
+        SET idEstatus = %s, idPaciente = %s, FechaSolicitud = NOW(), Para = %s   
+        WHERE idCita = %s AND idEmpresa = %s 
+    """, (idReservada, id_paciente, para, id_cita, id_empresa))
 
     conn.commit()
     cursor.close()
@@ -268,15 +273,17 @@ def reservar_cita():
 @citas_paciente_bp.route("/paciente/confirmar")
 def confirmar_cita():
     idCita = request.args.get("idCita")
-
+    
+    idConfirmada = EstatusCita.id_estatus("Confirmada")
+    
     conn = conectar_bd()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE citas
-        SET Estatus = 'Confirmada'
+        SET idEstatus = %s
         WHERE idCita = %s
-    """, (idCita,))
+    """, (idConfirmada, idCita))
 
     conn.commit()
     cursor.close()
@@ -288,15 +295,17 @@ def confirmar_cita():
 @citas_paciente_bp.route("/paciente/cancelar")
 def cancelar_cita():
     idCita = request.args.get("idCita")
-
+    
+    idCancelada = EstatusCita.id_estatus("Cancelada")
+    
     conn = conectar_bd()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE citas
-        SET Estatus = 'Cancelada'
+        SET idEstatus = %s
         WHERE idCita = %s
-    """, (idCita,))
+    """, (idCancelada, idCita))
 
     conn.commit()
     cursor.close()
@@ -307,17 +316,20 @@ def cancelar_cita():
 # RE-AGENDAR CITA. DESDE EL LISTADO DE MIS CITAS 
 @citas_paciente_bp.route("/paciente/reagendar")
 def reagendar_cita():
+    
     idCita = request.args.get("idCita")
-
+    
+    idDisponible = EstatusCita.id_estatus("Disponible")
+    
     # Primero deja disponible la cita actual
     conn = conectar_bd()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE citas
-        SET Estatus = 'Disponible', idPaciente = NULL, FechaSolicitud = NULL
+        SET idEstatus = %s, idPaciente = NULL, FechaSolicitud = NULL
         WHERE idCita = %s
-    """, (idCita,))
+    """, (idDisponible, idCita,))
 
     conn.commit()
     cursor.close()

@@ -39,6 +39,21 @@
             <input type="checkbox" id="bloquear_dia" onchange="marcarTodo()"> Bloquear todo el día
         </label>
         <button class="btn btn-bloquear" onclick="bloquearSeleccionadas()">Bloquear seleccionadas</button>
+
+        <a href="/terapeuta/cambiar_estatus/{{ c.idCita }}/Disponible">
+            Poner Disponible
+        </a>
+
+        <a href="/terapeuta/cambiar_estatus/{{ c.idCita }}/Bloqueada">
+            Bloquear
+        </a>
+
+        <a href="/terapeuta/cambiar_estatus/{{ c.idCita }}/Cancelada">
+            Cancelar
+        </a>
+
+
+
     </div>
 
     <div class="mensaje" id="mensaje-tabla">Selecciona una fecha para ver las citas.</div>
@@ -76,6 +91,7 @@ function cargarCitas() {
         .then(res => res.json())
         .then(data => {
             citas = data;
+
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay citas para esta fecha</td></tr>';
                 mensaje.textContent = "No hay citas disponibles para este día.";
@@ -83,16 +99,23 @@ function cargarCitas() {
             }
 
             mensaje.textContent = "";
-
             tbody.innerHTML = '';
+
             data.forEach(cita => {
-                const disabled = (cita.Estatus === 'Bloqueada' || cita.Estatus === 'Confirmada') ? 'disabled' : '';
+
+                const disabled = (cita.nombreEstatus === "Cancelada" || cita.nombreEstatus === "Bloqueada") ? 'disabled' : '';
+
                 tbody.innerHTML += `
-                    <tr>
+                    <tr style="background-color:${cita.color};">
                         <td>${cita.HoraCita}</td>
                         <td>${cita.Paciente || '-'}</td>
-                        <td>${cita.Estatus}</td>
-                        <td><input type="checkbox" class="check-cita" data-id="${cita.IdCita}" ${disabled}></td>
+                        <td>${cita.nombreEstatus}</td>
+                        <td>
+                            <input type="checkbox"
+                                   class="check-cita"
+                                   data-id="${cita.IdCita}"
+                                   ${disabled}>
+                        </td>
                     </tr>
                 `;
             });
@@ -100,9 +123,10 @@ function cargarCitas() {
         .catch(err => {
             console.error(err);
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Error al cargar las citas</td></tr>';
-            mensaje.textContent = "Error al cargar las citas. Intenta nuevamente.";
+            mensaje.textContent = "Error al cargar las citas.";
         });
 }
+
 
 function marcarTodo() {
     const check = document.getElementById('bloquear_dia').checked;

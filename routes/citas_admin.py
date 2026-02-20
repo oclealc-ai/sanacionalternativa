@@ -1,6 +1,9 @@
-from flask import Blueprint, request, render_template, jsonify, session
+from turtle import color
+from flask import Blueprint, abort, app, redirect, request, render_template, jsonify, session
 from database import conectar_bd
 from datetime import datetime, timedelta
+from modelos import  db, Cita, EstatusEmpresa, EstatusCita
+
 import logging
 import calendar
 
@@ -35,6 +38,8 @@ def generar_citas():
     """, (id_empresa,))
     terapeutas = cursor.fetchall()  # lista de dicts con idUsuario, Usuario y NombreUsuario
     # -----------------------------
+    
+    idCreada = EstatusCita.id_estatus("Creada")
     
     logger.warning(f"id_empresa: {id_empresa}")
     
@@ -104,9 +109,9 @@ def generar_citas():
                         continue
 
                     cursor.execute("""
-                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, Estatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa)
+                        INSERT INTO citas (Terapeuta, FechaCita, HoraCita, idEstatus, FechaSolicitud, idPaciente, Notas, Duracion, idEmpresa)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (id_terapeuta, dia.date(), hora_actual.time(), 'Creada', None, None, '', intervalo, id_empresa))
+                    """, (id_terapeuta, dia.date(), hora_actual.time(), idCreada, None, None, '', intervalo, id_empresa))
                     
                     total_creadas += 1
                     hora_actual += timedelta(minutes=intervalo)
@@ -204,11 +209,17 @@ def lista_citas():
         SELECT 
             c.*,
             p.NombrePaciente,
-            u.NombreUsuario AS NombreTerapeuta
+            u.NombreUsuario AS NombreTerapeuta,
+            COALESCE(ee.color, '#757575') AS color
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
         LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
-        WHERE c.FechaCita = %s AND c.idEmpresa = %s AND c.Terapeuta = %s
+        LEFT JOIN estatus_empresa ee 
+            ON ee.idEstatus = c.idEstatus 
+            AND ee.idEmpresa = c.idEmpresa
+        WHERE c.FechaCita = %s 
+        AND c.idEmpresa = %s 
+        AND c.Terapeuta = %s
         ORDER BY c.HoraCita
         """, (fecha, id_empresa, usuario_logueado))
     else:
@@ -216,11 +227,16 @@ def lista_citas():
         SELECT 
             c.*,
             p.NombrePaciente,
-            u.NombreUsuario AS NombreTerapeuta
+            u.NombreUsuario AS NombreTerapeuta,
+            COALESCE(ee.color, '#757575') AS color
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
         LEFT JOIN usuarios u ON c.Terapeuta = u.Usuario
-        WHERE c.FechaCita = %s AND c.idEmpresa = %s 
+        LEFT JOIN estatus_empresa ee 
+            ON ee.idEstatus = c.idEstatus 
+            AND ee.idEmpresa = c.idEmpresa
+        WHERE c.FechaCita = %s 
+        AND c.idEmpresa = %s
         ORDER BY c.HoraCita
         """, (fecha, id_empresa))
 
@@ -249,54 +265,74 @@ def bloquear_citas_html():
 # ------------------------------------------------------------
 # LISTA DE CITAS POR DÍA PARA BLOQUEAR (JSON)
 # ------------------------------------------------------------
-@citas_admin_bp.route("/admin/lista_citas_bloquear")
+
+@app.route("/admin/lista_citas_bloquear")
 def lista_citas_bloquear():
     fecha = request.args.get("fecha")
-    if not fecha:
-        return jsonify([])
-    
     id_empresa = session.get("idEmpresa")
     
-    db = conectar_bd()
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT c.IdCita, c.HoraCita, c.Estatus, c.idPaciente, p.NombrePaciente AS Paciente
-        FROM citas c
-        LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
-        WHERE DATE(c.FechaCita) = %s AND c.idEmpresa = %s
-        ORDER BY c.HoraCita
-    """, (fecha, id_empresa))
-    citas = cursor.fetchall()
-    cursor.close()
-    db.close()
+    citas = Cita.query.filter_by(FechaCita=fecha).all()
 
-    # Convertir HoraCita de timedelta a string "HH:MM:SS"
+    resultado = []
+
     for c in citas:
-        if isinstance(c['HoraCita'], timedelta):
-            total_seconds = int(c['HoraCita'].total_seconds())
-            horas = total_seconds // 3600
-            minutos = (total_seconds % 3600) // 60
-            segundos = total_seconds % 60
-            c['HoraCita'] = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+        nombreEstatus = EstatusCita.nombre_estatus(c.idEstatus)
+        colorEstatus  = EstatusEmpresa.color_estatus(c.idEstatus, id_empresa)
 
-    return jsonify(citas)
+        resultado.append({
+            "IdCita": c.idCita,
+            "HoraCita": c.HoraCita.strftime("%H:%M"),
+            "Paciente": c.Paciente.nombre if c.Paciente else None,
+            "idEstatus": c.idEstatus,
+            "nombreEstatus": nombreEstatus,
+            "color": colorEstatus
+        })
+
+    return jsonify(resultado)
+
 
 # ------------------------------------------------------------
 # BLOQUEAR CITAS SELECCIONADAS (POST)
 # ------------------------------------------------------------
 @citas_admin_bp.route("/admin/bloquear_citas", methods=["POST"])
 def bloquear_citas():
+    # 1️⃣ Verificar login
+    if "idUsuario" not in session:
+        return redirect("/login/sistema")
+
+    # 2️⃣ Verificar que sea admin
+    if session.get("tipoUsuario") != "Admin":
+        abort(403)
+    
+    data = request.get_json()
+    ids = data.get("ids", [])
+
+    estatus_bloqueada = EstatusCita.id_estatus("Bloqueada")
+
+    Cita.query.filter(Cita.idCita.in_(ids)).update(
+        {"idEstatus": estatus_bloqueada},
+        synchronize_session=False
+    )
+    db.session.commit()
+
+    return jsonify({"mensaje": "Citas bloqueadas correctamente"})
+
+
+@citas_admin_bp.route("/admin/disponble_citas", methods=["POST"])
+def disponble_citas():
     data = request.get_json()
     ids = data.get("ids", [])
     usuario = data.get("usuario", "Asistente")
         
     if not ids:
-        return jsonify({"mensaje": "No se recibieron citas para bloquear"}), 400
-
+        return jsonify({"mensaje": "No se recibieron citas para poner como disponibles"}), 400
+    
+    idDisponible = EstatusCita.id_estatus("Disponible")
+    
     db = conectar_bd()
     cursor = db.cursor()
     format_strings = ','.join(['%s'] * len(ids))
-    query = f"UPDATE citas SET Estatus='Bloqueada' WHERE IdCita IN ({format_strings})"
+    query = f"UPDATE citas SET idEstatus={idDisponible} WHERE IdCita IN ({format_strings})"
     cursor.execute(query, tuple(ids))
     db.commit()
     
@@ -304,4 +340,25 @@ def bloquear_citas():
     cursor.close()
     db.close()
 
-    return jsonify({"mensaje": f"{afectadas} cita(s) bloqueada(s) exitosamente"})
+    return jsonify({"mensaje": f"{afectadas} cita(s) puesta(s) como disponible(s) exitosamente"})
+
+@citas_admin_bp.route("/terapeuta/cambiar_estatus/<int:idCita>/<nuevo>")
+def cambiar_estatus(idCita, nuevo):
+
+    idNuevo = EstatusCita.id_estatus(nuevo)
+    
+    if idNuevo is None:
+        return "Estatus no válido", 400
+    
+    db = conectar_bd()
+    cursor = db.cursor()
+    cursor.execute("SELECT idEstatus FROM citas WHERE IdCita = %s", (idCita,))
+    estatus_anterior = cursor.fetchone()[0]
+    
+    query = f"UPDATE citas SET idEstatus={idNuevo} WHERE IdCita = %s"
+    cursor.execute(query, (idCita,))
+    db.commit()
+    
+    logger.warning(f"Usuario {session.get('Usuario')} cambió estatus de cita {idCita} de '{estatus_anterior}' a '{nuevo}'")
+
+    return redirect(request.referrer)

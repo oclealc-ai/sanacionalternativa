@@ -11,11 +11,14 @@ from routes.ver_citas           import ver_citas_bp
 from routes.citas_paciente      import citas_paciente_bp
 from routes.empresas            import empresas_bp
 from routes.anuncios_paciente   import anuncios_paciente_bp
+from flask import Flask
+from modelos import db
 
 import re
 import os
 import mysql
 import logging
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +29,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = "QWERTY12345!@#$"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://usuario:password@localhost/tu_bd'
+
+db.init_app(app)
 
 # ----------------------------------------
 # RUTAS PRINCIPALES

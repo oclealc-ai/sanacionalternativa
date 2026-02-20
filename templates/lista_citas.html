@@ -71,14 +71,6 @@ th {
 
 tr:nth-child(even) { background: #f2f2f2; }
 
-/* colores por estatus */
-.Disponible { background: #d4edda !important; } 
-.Reservada  { background: #cfe2ff !important; }
-.Confirmada { background: #bee5eb !important; }
-.Cancelada  { background: #f8d7da !important; }
-.Realizada  { background: #e2e3e5 !important; }
-.Cerrada    { background: #d6d8db !important; }
-
 .btn-volver {
     display: block;
     width: 100%;
@@ -119,6 +111,9 @@ tr:nth-child(even) { background: #f2f2f2; }
 
 .botones-dia button:hover {
     background: #0056b3;
+}
+.fila-cita {
+    background-color: var(--row-color);
 }
 
 
@@ -166,7 +161,8 @@ tr:nth-child(even) { background: #f2f2f2; }
             </thead>
             <tbody>
                 {% for c in citas %}
-                    <tr class="{{ c.Estatus }}" data-terapeuta="{{ c.Terapeuta }}">
+                    <tr style="--row-color: {{ c.color }};" class="fila-cita" data-terapeuta="{{ c.Terapeuta }}">
+
                         <td>{{ c.HoraCita }}</td>
                         <td>
                             {% if c.idPaciente %}
@@ -175,7 +171,7 @@ tr:nth-child(even) { background: #f2f2f2; }
                                 <em>Disponible</em>
                             {% endif %}
                         </td>
-                        <td>{{ c.Estatus }}</td>
+                        <td>{{ c.idEstatus }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

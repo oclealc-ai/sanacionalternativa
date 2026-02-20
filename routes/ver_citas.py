@@ -1,9 +1,10 @@
-from flask import Blueprint, request, render_template, jsonify
+from flask    import Blueprint, request, render_template, jsonify
 from database import conectar_bd
 from datetime import datetime, time
+from modelos  import EstatusCita
+from citas_admin import color_estatus
 
 ver_citas_bp = Blueprint("ver_citas", __name__)
-
 
 # Página que muestra el calendario
 @ver_citas_bp.route("/admin/ver_citas")
@@ -33,7 +34,7 @@ def api_citas_rango():
 
     # Obtener citas en rango; traer nombre del paciente si existe
     cursor.execute("""
-        SELECT c.idCita, c.FechaCita, c.HoraCita, c.Estatus, c.idPaciente,
+        SELECT c.idCita, c.FechaCita, c.HoraCita, c.idEstatus, c.idPaciente,
                p.NombrePaciente AS nombre_paciente
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
@@ -42,16 +43,6 @@ def api_citas_rango():
     filas = cursor.fetchall()
     cursor.close()
     conn.close()
-
-    # Mapeo de colores por Estatus
-    color_map = {
-        "disponible": "#66bb6a",   # verde
-        "programada": "#2196f3",   # azul
-        "confirmada": "#00bcd4",   # turquesa
-        "cancelada": "#9e9e9e",    # gris
-        "realizada": "#8e24aa",    # morado
-        "cerrada": "#212121"       # negro
-    }
 
     eventos = []
     for f in filas:
@@ -68,9 +59,11 @@ def api_citas_rango():
 
         # construir ISO datetime para FullCalendar (sin zona)
         start_iso = f"{fecha.isoformat()}T{hora_str}"
-
+        
+        EstatusNom = EstatusCita.nombre_estatus(f["idEstatus"]) or "Desconocido"
+        
         # Título: hora + estatus + (nombre si existe)
-        titulo = f"{hora_str[:5]} — {f['Estatus']}"
+        titulo = f"{hora_str[:5]} — {EstatusNom}"
         if f.get("idPaciente"):
             nombre = f.get("nombre_paciente") or "Paciente"
             titulo += f" — {nombre}"
@@ -80,9 +73,9 @@ def api_citas_rango():
             "title": titulo,
             "start": start_iso,
             "allDay": False,
-            "color": color_map.get(f["Estatus"].lower(), "#757575"),
+            "color": EstatusCita.color_estatus(f["idEstatus"]),
             "extendedProps": {
-                "estatus": f["Estatus"],
+                "estatus": f["idEstatus"],
                 "idPaciente": f["idPaciente"],
                 "nombrePaciente": f.get("nombre_paciente")
             }
@@ -108,7 +101,7 @@ def api_citas_dia():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT c.idCita, c.FechaCita, c.HoraCita, c.Estatus, c.idPaciente, c.Notas,
+        SELECT c.idCita, c.FechaCita, c.HoraCita, c.idEstatus, c.idPaciente, c.Notas,
                p.NombrePaciente AS nombre_paciente
         FROM citas c
         LEFT JOIN paciente p ON c.idPaciente = p.IdPaciente
@@ -126,7 +119,7 @@ def api_citas_dia():
         resultado.append({
             "idCita": f["idCita"],
             "hora": hora_str,
-            "estatus": f["Estatus"],
+            "estatus": f["idEstatus"],
             "idPaciente": f["idPaciente"],
             "nombrePaciente": f.get("nombre_paciente"),
             "notas": f.get("Notas") or ""
