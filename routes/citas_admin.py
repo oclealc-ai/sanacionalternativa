@@ -1,4 +1,3 @@
-from turtle import color
 from flask import Blueprint, abort, app, redirect, request, render_template, jsonify, session
 from database import conectar_bd
 from datetime import datetime, timedelta
