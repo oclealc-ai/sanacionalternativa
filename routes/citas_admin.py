@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, app, redirect, request, render_template, jsonify, session
 from database import conectar_bd
 from datetime import datetime, timedelta
-from modelos import  db, Cita, EstatusEmpresa, EstatusCita
+from modelos import  db, Cita, Paciente, EstatusEmpresa, EstatusCita
 
 import logging
 import calendar
@@ -265,12 +265,22 @@ def bloquear_citas_html():
 # LISTA DE CITAS POR DÍA PARA BLOQUEAR (JSON)
 # ------------------------------------------------------------
 
-@app.route("/admin/lista_citas_bloquear")
+@citas_admin_bp.route("/admin/lista_citas_bloquear")
 def lista_citas_bloquear():
     fecha = request.args.get("fecha")
     id_empresa = session.get("idEmpresa")
     
-    citas = Cita.query.filter_by(FechaCita=fecha).all()
+    
+    citas = (
+    Cita.query
+    .outerjoin(Paciente)
+    .filter(
+        Cita.FechaCita == fecha,
+        Cita.idEmpresa == id_empresa
+    )
+    .order_by(Cita.HoraCita)
+    .all()
+)
 
     resultado = []
 
