@@ -2,7 +2,6 @@ from flask    import Blueprint, request, render_template, jsonify
 from database import conectar_bd
 from datetime import datetime, time
 from modelos  import EstatusCita
-from citas_admin import color_estatus
 
 ver_citas_bp = Blueprint("ver_citas", __name__)
 
