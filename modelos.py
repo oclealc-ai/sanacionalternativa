@@ -66,6 +66,11 @@ class EstatusCita(db.Model):
     def nombre_estatus(id_estatus):
         estatus = EstatusCita.query.get(id_estatus)
         return estatus.nombre if estatus else None
+    
+    @staticmethod
+    def id_estatus(nombre_estatus):
+        estatus = EstatusCita.query.filter_by(nombre=nombre_estatus).first()
+        return estatus.idEstatus if estatus else None
 
 
 class EstatusEmpresa(db.Model):
