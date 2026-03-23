@@ -4,320 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sanación Alternativa</title>
-    <link rel="stylesheet" href="/static/css/index.css">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #7ed321;
-            --text-dark: #2c3e50;
-            --glass-bg: rgba(255, 255, 255, 0.85);
-        }
-
+        :root { --primary: #4a90e2; --text: #2c3e50; }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Quicksand', sans-serif;
+            margin: 0; font-family: 'Quicksand', sans-serif;
             background: linear-gradient(135deg, #e0f2f1 0%, #fce4ec 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-dark);
-            position: relative;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
         }
-
-        /* --- BLOQUE DE ALERTAS FLASH --- */
-        .flash-container {
-            position: absolute;
-            top: 20px;
-            width: 90%;
-            max-width: 500px;
-            z-index: 1000;
+        .main-card {
+            width: 90%; max-width: 800px; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px); border-radius: 30px; padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center;
         }
+        .frase-dia { color: #607d8b; font-style: italic; margin-bottom: 20px; font-size: 1.1rem; }
+        
+        /* Carrusel */
+        .carousel-container { margin: 30px 0; overflow: hidden; border-radius: 20px; background: #eee; }
+        .track { display: flex; transition: transform 0.1s linear; }
+        .card { flex: 0 0 280px; margin: 10px; background: white; border-radius: 15px; overflow: hidden; cursor: pointer; }
+        .card img { width: 100%; height: 160px; object-fit: cover; }
+        .card-txt { padding: 10px; font-size: 0.9rem; color: var(--primary); font-weight: bold; }
 
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            backdrop-filter: blur(5px);
-            animation: slideDown 0.5s ease-out;
+        .btn-box { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+        .btn { 
+            padding: 15px 30px; border-radius: 50px; text-decoration: none; 
+            font-weight: bold; transition: 0.3s; min-width: 160px;
         }
-
-        .alert-success { background-color: rgba(74, 175, 80, 0.9); color: white; }
-        .alert-danger { background-color: rgba(244, 67, 54, 0.9); color: white; }
-        .alert-info { background-color: rgba(33, 150, 243, 0.9); color: white; }
-
-        .btn-close-flash {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        /* ------------------------------- */
-
-        .container-minimal {
-            width: 90%;
-            max-width: 900px;
-            padding: 40px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.3);
-            position: relative;
-        }
-
-        .frase-block {
-            font-style: italic;
-            font-size: 1.1rem;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .carousel-wrapper {
-            margin: 30px 0;
-            overflow: hidden;
-            border-radius: 20px;
-            position: relative;
-        }
-
-        .carousel-container {
-            cursor: pointer;
-            padding: 10px 0;
-        }
-
-        .carousel-track {
-            display: flex;
-            transition: transform 0.1s linear;
-        }
-
-        .carousel-item {
-            flex: 0 0 280px;
-            margin: 0 15px;
-        }
-
-        .carousel-item img {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-        }
-
-        .carousel-item:hover img {
-            transform: scale(1.05);
-        }
-
-        .carousel-description {
-            margin-top: 15px;
-            font-weight: 500;
-            color: var(--primary-color);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            height: 20px;
-        }
-
-        .access-panel h1 {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
-            color: #34495e;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: #95a5a6;
-            margin-bottom: 40px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-access {
-            padding: 18px 45px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            min-width: 220px;
-        }
-
-        .btn-paciente {
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
-        }
-
-        .btn-personal {
-            background: #ffffff;
-            color: #4a90e2;
-            border: 2px solid #4a90e2;
-        }
-
-        .btn-access:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 25px rgba(0,0,0,0.15);
-        }
-
-        .btn-personal:hover {
-            background: #4a90e2;
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            .container-minimal { padding: 20px; }
-            .access-panel h1 { font-size: 1.8rem; }
-            .btn-access { width: 100%; }
-        }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-white { border: 2px solid var(--primary); color: var(--primary); }
+        .btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
 
-    <div class="flash-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category if category != 'message' else 'info' }}">
-                <span>{{ message }}</span>
-                <button class="btn-close-flash" onclick="this.parentElement.style.display='none'">&times;</button>
-              </div>
+<div class="main-card">
+    <div class="frase-dia">"{{ frase }}"</div>
+
+    <div class="carousel-container">
+        <div class="track" id="track">
+            {% for a in anuncios %}
+            <div class="card" onclick="window.location.href='{{ a.url }}'">
+                <img src="{{ a.imagen }}">
+                <div class="card-txt">{{ a.descripcion }}</div>
+            </div>
             {% endfor %}
-          {% endif %}
-        {% endwith %}
-    </div>
-
-    <div class="container-minimal">
-        <div class="frase-block" id="bloqueInfo">
-            {{ frase if frase else "Tu bienestar es nuestra prioridad" }}
-        </div>
-
-        <div class="carousel-wrapper">
-            <div class="carousel-container">
-                <div class="carousel-track" id="carouselTrack"></div>
-                <div class="carousel-description" id="carouselDescription"></div>
+            {# Repetimos para el efecto infinito #}
+            {% for a in anuncios %}
+            <div class="card" onclick="window.location.href='{{ a.url }}'">
+                <img src="{{ a.imagen }}">
+                <div class="card-txt">{{ a.descripcion }}</div>
             </div>
-        </div>
-
-        <div class="access-panel">
-            <h1>Sanación Alternativa</h1>
-            <p class="subtitle">¿Cómo podemos ayudarte hoy?</p>
-            
-            <div class="button-group">
-                <button class="btn-access btn-paciente" onclick="location.href='/e/fc362761'">
-                    <span class="btn-label">Soy Paciente</span>
-                </button>
-                <button class="btn-access btn-personal" onclick="location.href='/login/sistema'">
-                    <span class="btn-label">Área del Personal</span>
-                </button>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
-    <script>
-        async function loadAnuncios() {
-            try {
-                const anuncios = [
-                    {
-                        img: "/static/anuncios/imagen01.jpg",
-                        url: "#",
-                        descripcion: "Terapias holísticas personalizadas",
-                        activo: true
-                    },
-                    {
-                        img: "/static/anuncios/imagen02.jpg",
-                        url: "#",
-                        descripcion: "Agenda tu cita en línea",
-                        activo: true
-                    },
-                    {
-                        img: "/static/anuncios/imagen03.jpg",
-                        url: "#",
-                        descripcion: "Promociones especiales del mes",
-                        activo: true
-                    }
-                ];
-                initCarousel(anuncios);
-            } catch (error) {
-                console.error("Error al cargar anuncios:", error);
-            }
+    <h1>Sanación Alternativa</h1>
+    <div class="btn-box">
+        <a href="/e/fc362761" class="btn btn-blue">Acceso Clientes</a>
+        <a href="/login/sistema" class="btn btn-white">staff</a>
+    </div>
+</div>
+
+<script>
+    const track = document.getElementById('track');
+    let pos = 0;
+    function anim() {
+        if (track.children.length > 2) {
+            pos += 0.6;
+            if (pos >= (track.scrollWidth / 2)) pos = 0;
+            track.style.transform = `translateX(-${pos}px)`;
         }
-
-        function initCarousel(anunciosData) {
-            const activos = anunciosData.filter(a => a.activo);
-            if (activos.length === 0) return;
-
-            const track = document.getElementById("carouselTrack");
-            const desc = document.getElementById("carouselDescription");
-            const container = document.querySelector(".carousel-container");
-
-            const renderList = [...activos, ...activos];
-
-            renderList.forEach((a) => {
-                const item = document.createElement("div");
-                item.className = "carousel-item";
-                item.onclick = () => window.location.href = a.url;
-                item.innerHTML = `<img src="${a.img}" alt="anuncio">`;
-                track.appendChild(item);
-            });
-
-            let position = 0;
-            let paused = false;
-            const speed = 0.6; 
-            const itemWidth = 310;
-            const resetPoint = itemWidth * activos.length;
-
-            function animate() {
-                if (!paused) {
-                    position += speed;
-                    if (position >= resetPoint) position -= resetPoint;
-                    track.style.transform = `translateX(-${position}px)`;
-                }
-                requestAnimationFrame(animate);
-            }
-
-            container.addEventListener("mouseenter", () => paused = true);
-            container.addEventListener("mouseleave", () => {
-                paused = false;
-                desc.style.opacity = "0";
-            });
-
-            container.addEventListener("mousemove", (e) => {
-                const rect = container.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const index = Math.floor((position + x) / itemWidth) % activos.length;
-                if (activos[index]) {
-                    desc.innerText = activos[index].descripcion;
-                    desc.style.opacity = "1";
-                }
-            });
-            animate();
-        }
-
-        document.addEventListener("DOMContentLoaded", loadAnuncios);
-    </script>
+        requestAnimationFrame(anim);
+    }
+    anim();
+</script>
 </body>
 </html>

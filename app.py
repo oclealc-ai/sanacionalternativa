@@ -33,36 +33,36 @@ def page_not_found(e):
 @app.route('/')
 @app.route('/index')
 def index():
-    # Limpiamos sesión para un inicio fresco
     session.clear()
     
-    # Valores por defecto por si falla la DB
     frase_texto = "Tu bienestar es nuestra prioridad"
-    anuncios = []
-    empresa_citanet = None
+    anuncios_limpios = [] # Usaremos una lista nueva
 
     try:
-        # Intentamos obtener la frase
+        # Frase
         ultima_frase = Frase.query.order_by(Frase.fecha.desc()).first()
-        if ultima_frase:
+        if ultima_frase and ultima_frase.frase:
             frase_texto = ultima_frase.frase
         
-        # Intentamos obtener la info de la empresa (ID 1 por defecto)
-        empresa_citanet = Empresa.query.get(1)
-        
-        # Intentamos cargar anuncios activos
-        anuncios = Anuncio.query.filter_by(activo=True)\
-            .order_by(Anuncio.fechaCreacion.desc())\
-            .all()
+        # Anuncios: Los convertimos a diccionarios simples para evitar errores de Jinja2
+        anuncios_db = Anuncio.query.filter_by(activo=True)\
+            .order_by(Anuncio.fechaCreacion.desc()).all()
+            
+        for a in anuncios_db:
+            anuncios_limpios.append({
+                'imagen': a.imagen if a.imagen else '/static/anuncios/default.jpg',
+                'descripcion': a.descripcion if a.descripcion else 'Sanación Alternativa',
+                'url': a.urlAnuncio if a.urlAnuncio else '#'
+            })
             
     except Exception as e:
         logger.error(f"Error cargando datos de la DB: {e}")
-        # Si falla, no pasa nada, ya tenemos los valores por defecto arriba
 
     return render_template('index.html', 
                            frase=frase_texto, 
-                           anuncios=anuncios, 
-                           empresa=empresa_citanet)
+                           anuncios=anuncios_limpios) # Enviamos la lista limpia
+    
+    
 
 @app.route('/contacto/publico', methods=['POST'])
 def contacto_publico():
