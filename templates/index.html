@@ -3,87 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sanación Alternativa | Equilibrio y Bienestar</title>
+    <title>Sanación Alternativa | Equilibrio Vital</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .font-serif { font-family: 'Playfair Display', serif; }
+        body { font-family: 'Quicksand', sans-serif; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Imagen Hero específica de Reiki */
         .hero-gradient {
-            background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)), 
-                        url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background: linear-gradient(rgba(255,252,240,0.7), rgba(255,252,240,0.7)), 
+                        url('https://images.unsplash.com/photo-1591228127791-8e2eaef098d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
         }
+
+        .glass-nav {
+            background: rgba(255, 252, 240, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800">
+<body class="bg-[#fffcf0] text-stone-800">
 
-    <nav class="flex justify-between items-center px-8 py-6 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div class="text-2xl font-serif font-bold tracking-tight text-emerald-900">Sanación Alternativa</div>
-        <div class="space-x-8 text-sm font-medium">
-            <a href="#servicios" class="hover:text-emerald-700 transition">Servicios</a>
-            <a href="#nosotros" class="hover:text-emerald-700 transition">Nosotros</a>
-            <a href="https://www.citanet.com.mx/e/044a6432?destino=usuario" class="text-stone-500 hover:text-stone-800">Acceso Staff</a>
-            <a href="https://www.citanet.com.mx/e/044a6432" class="bg-emerald-800 text-white px-5 py-2 rounded-full hover:bg-emerald-700 transition">Agendar Cita</a>
+    <nav class="flex justify-between items-center px-8 py-5 glass-nav sticky top-0 z-50 border-b border-stone-200">
+        <div class="text-3xl font-serif font-semibold tracking-tight text-stone-700">Sanación <span class="italic text-emerald-800">Alternativa</span></div>
+        <div class="hidden md:flex items-center space-x-10 text-sm font-medium tracking-wide uppercase">
+            <a href="#servicios" class="hover:text-emerald-800 transition">Servicios</a>
+            <a href="https://www.citanet.com.mx/e/044a6432?destino=usuario" class="text-stone-400 hover:text-stone-800 transition">Staff</a>
+            <a href="https://www.citanet.com.mx/e/044a6432" class="bg-emerald-800 text-white px-7 py-2.5 rounded-full hover:bg-emerald-900 transition shadow-md shadow-emerald-200/50">
+                Agendar Sesión
+            </a>
         </div>
     </nav>
 
-    <header class="hero-gradient h-[80vh] flex flex-col items-center justify-center text-center px-4">
-        <h1 class="font-serif text-5xl md:text-7xl text-emerald-900 mb-6 italic">Encuentra tu centro, <br>sana tu camino.</h1>
-        <p class="max-w-2xl text-lg text-stone-600 mb-10 leading-relaxed">
-            Terapias integrales diseñadas para restaurar tu energía vital y encontrar la armonía que tu cuerpo y mente necesitan.
+    <header class="hero-gradient h-[85vh] flex flex-col items-center justify-center text-center px-6">
+        <span class="text-emerald-800 font-semibold tracking-[0.3em] uppercase text-xs mb-4">Terapias de Luz y Energía</span>
+        <h1 class="font-serif text-5xl md:text-8xl text-stone-800 mb-8 leading-tight">Canaliza tu paz <br><span class="italic">restaura tu espíritu.</span></h1>
+        <p class="max-w-xl text-lg text-stone-600 mb-12 font-light leading-relaxed">
+            Libera bloqueos energéticos a través de la imposición de manos y terapias vibracionales diseñadas para el bienestar profundo.
         </p>
-        <div class="flex gap-4">
-            <a href="https://www.citanet.com.mx/e/044a6432" class="bg-emerald-800 text-white px-8 py-4 rounded-lg shadow-lg hover:bg-emerald-700 transition-all font-semibold">
-                Reservar sesión ahora
-            </a>
-            <a href="#servicios" class="border border-emerald-800 text-emerald-800 px-8 py-4 rounded-lg hover:bg-emerald-50 transition-all font-semibold">
-                Ver servicios
+        <div class="flex flex-col md:flex-row gap-6">
+            <a href="https://www.citanet.com.mx/e/044a6432" class="bg-emerald-800 text-white px-10 py-4 rounded-full shadow-xl hover:bg-emerald-900 transition-all font-medium text-lg">
+                Iniciar mi Sanación
             </a>
         </div>
     </header>
 
-    <section id="servicios" class="py-24 px-8 max-w-7xl mx-auto">
-        <h2 class="font-serif text-4xl text-center text-emerald-900 mb-16">Nuestros Servicios</h2>
-        <div class="grid md:grid-cols-3 gap-12">
-            <div class="group cursor-pointer">
-                <div class="h-64 overflow-hidden rounded-2xl mb-6 shadow-md">
-                    <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+    <section id="servicios" class="py-28 px-8 max-w-7xl mx-auto">
+        <div class="text-center mb-20">
+            <h2 class="font-serif text-5xl text-stone-800 mb-4">El camino de la Energía</h2>
+            <div class="w-20 h-0.5 bg-emerald-800 mx-auto"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-16">
+            <div class="group">
+                <div class="aspect-[4/5] overflow-hidden rounded-3xl mb-8 shadow-2xl shadow-stone-200">
+                    <img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=800&q=80" 
+                         alt="Terapia Reiki" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
                 </div>
-                <h3 class="font-serif text-2xl mb-3">Yoga & Estiramiento</h3>
-                <p class="text-stone-600 leading-relaxed">Clases personalizadas para reconectar con tu movilidad y flexibilidad interna.</p>
+                <h3 class="font-serif text-3xl mb-4 text-stone-700">Terapia Reiki</h3>
+                <p class="text-stone-500 font-light leading-relaxed">Canalización de energía universal para armonizar los chakras, reduciendo el estrés y promoviendo la autocuración.</p>
             </div>
             
-            <div class="group cursor-pointer">
-                <div class="h-64 overflow-hidden rounded-2xl mb-6 shadow-md">
-                    <img src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="group">
+                <div class="aspect-[4/5] overflow-hidden rounded-3xl mb-8 shadow-2xl shadow-stone-200">
+                    <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?auto=format&fit=crop&w=800&q=80" 
+                         alt="Cuencos Tibetanos" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
                 </div>
-                <h3 class="font-serif text-2xl mb-3">Terapia Energética</h3>
-                <p class="text-stone-600 leading-relaxed">Sesiones de equilibrio energético para liberar bloqueos emocionales y estrés físico.</p>
+                <h3 class="font-serif text-3xl mb-4 text-stone-700">Armonización Vibracional</h3>
+                <p class="text-stone-500 font-light leading-relaxed">Uso de cuencos y frecuencias sonoras que penetran a nivel celular para restaurar el equilibrio del sistema nervioso.</p>
             </div>
 
-            <div class="group cursor-pointer">
-                <div class="h-64 overflow-hidden rounded-2xl mb-6 shadow-md">
-                    <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+            <div class="group">
+                <div class="aspect-[4/5] overflow-hidden rounded-3xl mb-8 shadow-2xl shadow-stone-200">
+                    <img src="https://images.unsplash.com/photo-1536620215701-5fe5da75d4f2?auto=format&fit=crop&w=800&q=80" 
+                         alt="Limpieza Energética" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
                 </div>
-                <h3 class="font-serif text-2xl mb-3">Meditación Guiada</h3>
-                <p class="text-stone-600 leading-relaxed">Mindfulness y técnicas de respiración para una mente en calma total.</p>
+                <h3 class="font-serif text-3xl mb-4 text-stone-700">Alineación Energética</h3>
+                <p class="text-stone-500 font-light leading-relaxed">Liberación de energías estancadas y protección del campo áurico para recuperar la vitalidad diaria.</p>
             </div>
         </div>
     </section>
 
-    <footer class="bg-emerald-950 text-emerald-100 py-16 px-8 text-center">
-        <div class="mb-8">
-            <h2 class="font-serif text-3xl mb-4 italic">Sanación Alternativa</h2>
-            <p class="opacity-70">Plataforma gestionada por CitaNet</p>
+    <footer class="bg-stone-100 text-stone-800 py-20 px-8 border-t border-stone-200">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="font-serif text-4xl mb-6 italic text-emerald-900">Sanación Alternativa</h2>
+            <p class="text-stone-500 mb-10 font-light">Un espacio sagrado para tu transformación interior.</p>
+            
+            <div class="flex justify-center gap-12 mb-12 font-medium text-sm tracking-widest uppercase">
+                <a href="#" class="hover:text-emerald-800 transition">Instagram</a>
+                <a href="#" class="hover:text-emerald-800 transition">WhatsApp</a>
+                <a href="mailto:citanet.info@gmail.com" class="hover:text-emerald-800 transition">Soporte</a>
+            </div>
+            
+            <div class="pt-10 border-t border-stone-200">
+                <p class="text-[10px] text-stone-400 uppercase tracking-[0.4em] mb-2">Plataforma gestionada por CitaNet</p>
+                <p class="text-xs text-stone-400">&copy; 2026 Todos los derechos reservados.</p>
+            </div>
         </div>
-        <div class="flex justify-center gap-8 mb-12">
-            <a href="#" class="hover:text-white transition">Instagram</a>
-            <a href="#" class="hover:text-white transition">WhatsApp</a>
-            <a href="mailto:citanet.info@gmail.com" class="hover:text-white transition text-xs">Soporte</a>
-        </div>
-        <p class="text-xs opacity-50 uppercase tracking-widest">&copy; 2026 Todos los derechos reservados.</p>
     </footer>
 
 </body>
