@@ -1,0 +1,34 @@
+crear servicio gunicorn
+
+--------------------------------------------------------------
+sudo nano /etc/systemd/system/appsanalter.service
+
+[Unit]
+Description=Gunicorn AppSanAlter
+After=network.target
+
+[Service]
+User=appuser
+Group=www-data
+WorkingDirectory=/home/appuser/apps/AppSanAlter
+Environment="PATH=/home/appuser/apps/AppSanAlter/venv/bin"
+ExecStart=/home/appuser/apps/AppSanAlter/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 127.0.0.1:8000 \
+    --log-level debug \
+    --access-logfile /home/appuser/apps/AppSanAlter/logs/access.log \
+    --error-logfile /home/appuser/apps/AppSanAlter/logs/error.log \
+    app:app
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+-----------------------------------------------------------------------------
+sudo systemctl daemon-reload          # Recarga los servicios para que reconozca el nuevo archivo
+sudo systemctl start appsanalter      # Arranca tu servicio creado
+sudo systemctl status appsanalter     # Verifica que esté corriendo
+sudo systemctl enable appsanalter     # Para que arranque automáticamente al iniciar el servidor
+

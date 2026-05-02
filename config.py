@@ -39,4 +39,4 @@ PASSWORD_360nrs = os.getenv("PASSWORD_360nrs")
 SENDER_ID360nrs = os.getenv("SENDER_ID360nrs")
 URL_360nrs      = os.getenv("URL_360nrs", "https://dashboard.360nrs.com/api/rest/sms") 
 
-URL_BASE = os.getenv("URL_BASE", "http://localhost:5000")
+URL_BASE = os.getenv("URL_BASE", "http://www.sanacionalternativa.com.mx")
