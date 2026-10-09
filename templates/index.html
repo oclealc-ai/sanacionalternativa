@@ -26,6 +26,7 @@
                 Sanación <span class="italic text-emerald-800">Alternativa</span>
             </div>
             <div class="flex items-center space-x-8 text-sm font-semibold tracking-wider uppercase">
+                <a href="#horarios" class="text-stone-600 hover:text-emerald-800 transition">Horarios</a>
                 <a href="#servicios" class="text-stone-600 hover:text-emerald-800 transition">Servicios</a>
                 <a href="https://www.citanet.com.mx/e/ac3785dd?destino=usuario" class="text-stone-600 hover:text-stone-900 transition">Staff</a>
                 <a href="https://www.citanet.com.mx/e/ac3785dd" class="bg-emerald-800 text-white px-6 py-2 rounded-full hover:bg-emerald-900 transition shadow-md shadow-emerald-900/10">
@@ -49,6 +50,48 @@
             </a>
         </div>
     </header>
+
+    <section id="horarios" class="py-20 px-6 max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <span class="text-emerald-800 font-bold tracking-[0.2em] uppercase text-xs">Agenda abierta</span>
+            <h2 class="font-serif text-4xl text-stone-900 mt-2 mb-3">Horarios disponibles</h2>
+            <p class="text-sm text-stone-500 max-w-xl mx-auto font-light">
+                Consulta los espacios disponibles para las próximas dos semanas. Elige un horario para continuar en CitaNet.
+            </p>
+            <div class="w-12 h-0.5 bg-emerald-800 mx-auto mt-4"></div>
+        </div>
+
+        {% if error_horarios %}
+            <p class="max-w-2xl mx-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-900" role="status">
+                En este momento no podemos consultar la agenda. Intenta más tarde o agenda directamente en CitaNet.
+            </p>
+        {% elif horarios_por_dia %}
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {% for dia in horarios_por_dia %}
+                    <article class="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-sm">
+                        <h3 class="font-serif text-2xl text-stone-800">{{ dia.titulo }}</h3>
+                        <p class="mt-1 text-xs capitalize text-stone-500">{{ dia.fecha_larga }}</p>
+                        <div class="mt-5 flex flex-wrap gap-2">
+                            {% for horario in dia.horarios %}
+                                <a href="https://www.citanet.com.mx/e/ac3785dd"
+                                   title="Continúa en CitaNet para reservar el {{ dia.fecha_larga }} a las {{ horario.hora }}; inicia sesión o regístrate con tu teléfono."
+                                   class="inline-flex min-h-10 items-center justify-center rounded-full border border-emerald-800/20 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800 hover:bg-emerald-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">
+                                    {{ horario.hora }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            <p class="mt-6 text-center text-xs text-stone-500">
+                Para reservar, inicia sesión o regístrate en CitaNet con tu teléfono. Después podrás elegir el horario en el calendario.
+            </p>
+        {% else %}
+            <p class="max-w-2xl mx-auto rounded-xl border border-stone-200 bg-white/70 px-5 py-4 text-center text-sm text-stone-600">
+                No hay horarios disponibles en las próximas dos semanas. Puedes consultar de nuevo más tarde.
+            </p>
+        {% endif %}
+    </section>
 
     <section id="servicios" class="py-24 px-6 max-w-5xl mx-auto">
         <div class="text-center mb-20">
