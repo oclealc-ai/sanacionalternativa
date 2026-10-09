@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 from flask import flash, Flask, render_template, redirect, request, session, url_for
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from sqlalchemy import text
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload
-from modelos import db, Frase, Empresa, Anuncio
+from modelos import db, Frase, Empresa, Anuncio, Cita, EstatusCita
 from correo import enviar_correo_base
 import logging
 import config
@@ -71,42 +71,27 @@ def index():
         else:
             ahora = datetime.now()
             fecha_fin = ahora.date() + timedelta(days=14)
-            citas = db.session.execute(
-                text("""
-                    SELECT c.fechaCita, c.horaCita
-                    FROM cita AS c
-                    JOIN estatus_cita AS estado_cita
-                      ON estado_cita.idEstatus = c.idEstatus
-                    WHERE c.idEmpresa = :id_empresa
-                      AND c.idUsuario = :id_usuario
-                      AND c.idEstatus IS NOT NULL
-                      AND estado_cita.nombre IN ('Disponible', 'Cancelada')
-                      AND c.idCitaMaestra IS NULL
-                      AND c.fechaCita >= :fecha_inicio
-                      AND c.fechaCita <= :fecha_fin
-                      AND (
-                          c.fechaCita > :fecha_hoy
-                          OR (c.fechaCita = :fecha_hoy AND c.horaCita >= :hora_actual)
-                      )
-                      AND (
-                          SELECT COUNT(*)
-                          FROM cita_cliente AS cc
-                          JOIN estatus_cita AS estado_reserva
-                            ON estado_reserva.idEstatus = cc.idEstatus
-                          WHERE cc.idCita = c.idCita
-                            AND estado_reserva.nombre IN ('Reservada', 'Confirmada', 'Realizada')
-                      ) < GREATEST(COALESCE(c.cupoMaximo, 1), 1)
-                    ORDER BY c.fechaCita, c.horaCita
-                """),
-                {
-                    "id_empresa": empresa.idEmpresa,
-                    "id_usuario": 4,
-                    "fecha_inicio": ahora.date(),
-                    "fecha_hoy": ahora.date(),
-                    "fecha_fin": fecha_fin,
-                    "hora_actual": ahora.time(),
-                },
-            ).all()
+            id_disponible = EstatusCita.id_estatus("Disponible")
+            if id_disponible is None:
+                logger.error("No se encontró el estatus 'Disponible' para consultar horarios.")
+                error_horarios = True
+                citas = []
+            else:
+                citas = db.session.query(Cita.fechaCita, Cita.horaCita).filter(
+                    Cita.idEmpresa == empresa.idEmpresa,
+                    Cita.idUsuario == 4,
+                    Cita.idEstatus == id_disponible,
+                    Cita.idCliente.is_(None),
+                    Cita.fechaCita >= ahora.date(),
+                    Cita.fechaCita <= fecha_fin,
+                    or_(
+                        Cita.fechaCita > ahora.date(),
+                        and_(
+                            Cita.fechaCita == ahora.date(),
+                            Cita.horaCita >= ahora.time(),
+                        ),
+                    ),
+                ).order_by(Cita.fechaCita, Cita.horaCita).all()
 
             nombres_dias = (
                 "lunes", "martes", "miércoles", "jueves",
