@@ -1,260 +1,160 @@
-from flask                       import flash, Flask, render_template, redirect, request, session, url_for, send_from_directory
-from flask_cors                  import CORS
-from flask_jwt_extended          import JWTManager
-from datetime                    import datetime
-from correo                      import enviar_correo_base
-from sqlalchemy.orm              import joinedload
-from sqlalchemy                  import func
-from modelos                     import db, Frase, Empresa, Publicidad, Plan, Version, VisitaIndex, movCuenta
-from routes.usuarios             import usuarios_bp
-from routes.cliente              import cliente_bp
-from routes.frases               import frases_bp
-from routes.productos            import productos_bp
-from routes.citas_admin          import citas_admin_bp
-from routes.citas_cliente        import citas_cliente_bp
-from routes.ver_citas            import ver_citas_bp
-from routes.empresas             import empresas_bp
-from routes.admin                import admin_bp
-from routes.versiones            import versiones_bp
-from routes.verificar            import verificar_bp
-from routes.publicidad           import publicidad_bp
-from routes.codigos_telefono     import codigos_telefono_bp
-from routes.vendedores           import vendedores_bp
-from routes.pagos                import pagos_bp
-from routes.pagos_mp             import pagos_mp_bp
-from whatsapp                    import whatsapp_bp
-from constantes                  import const
-from movil                       import movil_bp
-from firebase_admin             import credentials
+"""
+Sanación Alternativa - sitio público conectado a la base de datos de CitaNet.
 
-import firebase_admin
+Solo sirve el index.html con los horarios disponibles de la agenda.
+La reservación se hace en CitaNet (los enlaces del index apuntan allá),
+por eso aquí NO se registran los blueprints de routes/.
+
+Requiere en la misma carpeta:
+  - config.py            (con SQLALCHEMY_DATABASE_URI apuntando a la BD de CitaNet)
+  - modelos.py           (el de CitaNet, el vigente)
+  - templates/index.html
+  - static/img/...       (imagen01.jpeg a imagen04.jpeg)
+"""
 import logging
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from flask import Flask, render_template
+from sqlalchemy import and_, or_
+
 import config
-import os
-import sys
-import threading
-import requests
+from modelos import db, Empresa, Cita, EstatusCita
+
+# ----------------------------------------
+# AJUSTES DEL SITIO
+# ----------------------------------------
+SLUG_EMPRESA     = "ac3785dd"             # Empresa "Sanación Alternativa" en CitaNet
+ID_USUARIO_STAFF = 4                      # Staff cuya agenda se muestra
+DIAS_ADELANTE    = 14                     # Cuántos días hacia adelante se consultan
+ZONA_HORARIA     = "America/Mexico_City"  # Las citas se guardan en hora local
+
+NOMBRES_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+NOMBRES_MESES = (
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+)
 
 # Configuración de Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates")
-CORS(app, supports_credentials=True) # Esto es vital para que Android/iPhone no sean bloqueados, 
-                                     # supports_credentials permite que viaje la sesión
-
-app.secret_key = "QWERTY12345!@#$"
-app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads', 'apks')
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 Megabytes
-
-# Una frase secreta que solo tú sepas para proteger los tokens
-app.config["JWT_SECRET_KEY"] = "Citanet_Seguridad_2026_Movel" 
-jwt = JWTManager(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = config.SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Evita "MySQL server has gone away" cuando el sitio pasa un rato sin visitas
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 280}
 
 db.init_app(app)
 
-# --- AJUSTE: Filtro para formatear moneda en plantillas ---
-#@app.template_filter('format_currency')
-#def format_currency(value):
-#    if value is None:
-#        return "$0.00"
-#    return "${:,.2f}".format(value)
 
+# ----------------------------------------
+# FUNCIONES AUXILIARES
+# ----------------------------------------
+def ahora_local():
+    """Fecha y hora actual en la zona horaria del negocio (sin tzinfo)."""
+    try:
+        return datetime.now(ZoneInfo(ZONA_HORARIA)).replace(tzinfo=None)
+    except Exception:
+        # Si el servidor no tiene la base de zonas horarias, usamos la hora del sistema
+        return datetime.now()
+
+
+def agrupar_horarios(citas, ahora):
+    """Agrupa [(fecha, hora), ...] por día con el formato que espera index.html."""
+    hoy = ahora.date()
+    manana = hoy + timedelta(days=1)
+    grupos = {}
+
+    for fecha, hora in citas:
+        if fecha not in grupos:
+            if fecha == hoy:
+                titulo = "Hoy"
+            elif fecha == manana:
+                titulo = "Mañana"
+            else:
+                titulo = NOMBRES_DIAS[fecha.weekday()].capitalize()
+            grupos[fecha] = {
+                "fecha": fecha,
+                "titulo": titulo,
+                "fecha_larga": f"{NOMBRES_DIAS[fecha.weekday()]}, {fecha.day} de {NOMBRES_MESES[fecha.month - 1]}",
+                "horarios": [],
+            }
+        grupos[fecha]["horarios"].append({"hora": hora.strftime("%H:%M")})
+
+    return list(grupos.values())
+
+
+def obtener_horarios():
+    """
+    Devuelve (horarios_por_dia, error_horarios).
+    Un horario disponible es una cita en estatus 'Disponible' del staff indicado,
+    con lugar libre, dentro de los próximos DIAS_ADELANTE días y que no haya pasado.
+    """
+    try:
+        # Se piden solo las columnas necesarias (no el objeto completo) para que el sitio
+        # no dependa de columnas que no se usan aquí.
+        id_empresa = db.session.query(Empresa.idEmpresa).filter(Empresa.slug == SLUG_EMPRESA).scalar()
+        if id_empresa is None:
+            logger.error("No se encontró la empresa con slug %s.", SLUG_EMPRESA)
+            return [], True
+
+        id_disponible = db.session.query(EstatusCita.idEstatus).filter(EstatusCita.nombre == "Disponible").scalar()
+        if id_disponible is None:
+            logger.error("No se encontró el estatus 'Disponible' para consultar horarios.")
+            return [], True
+
+        ahora = ahora_local()
+        hoy = ahora.date()
+
+        citas = (
+            db.session.query(Cita.fechaCita, Cita.horaCita)
+            .filter(
+                Cita.idEmpresa == id_empresa,
+                Cita.idUsuario == ID_USUARIO_STAFF,
+                Cita.idEstatus == id_disponible,
+                Cita.cupoOcupado < Cita.cupoMaximo,   # todavía hay lugar
+                Cita.idCitaMaestra.is_(None),         # no es continuación de otra reserva
+                Cita.fechaCita >= hoy,
+                Cita.fechaCita <= hoy + timedelta(days=DIAS_ADELANTE),
+                or_(
+                    Cita.fechaCita > hoy,
+                    and_(Cita.fechaCita == hoy, Cita.horaCita >= ahora.time()),
+                ),
+            )
+            .order_by(Cita.fechaCita, Cita.horaCita)
+            .all()
+        )
+        return agrupar_horarios(citas, ahora), False
+
+    except Exception:
+        db.session.rollback()
+        logger.exception("Error consultando horarios de Sanación Alternativa (usuario %s).", ID_USUARIO_STAFF)
+        return [], True
+
+
+# ----------------------------------------
+# RUTAS
+# ----------------------------------------
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template("404.html"), 404
+    try:
+        return render_template("404.html"), 404
+    except Exception:
+        return "Página no encontrada", 404
+
 
 @app.route("/")
-def home():
-    return redirect("/index")
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-@app.route('/')
-@app.route('/index')
+@app.route("/index")
 def index():
-    session.clear()
-    
-    frase_texto = "Tu bienestar es nuestra prioridad"
-    anuncios_limpios = [] # Usaremos una lista nueva
-    horarios_por_dia = []
-    error_horarios = False
-
-    try:
-        # Frase
-        ultima_frase = Frase.query.order_by(Frase.fecha.desc()).first()
-        if ultima_frase and ultima_frase.frase:
-            frase_texto = ultima_frase.frase
-        
-        # Anuncios: Los convertimos a diccionarios simples para evitar errores de Jinja2
-        anuncios_db = Anuncio.query.filter_by(activo=True)\
-            .order_by(Anuncio.fechaCreacion.desc()).all()
-            
-        for a in anuncios_db:
-            anuncios_limpios.append({
-                'imagen': a.imagen if a.imagen else '/static/anuncios/default.jpg',
-                'descripcion': a.descripcion if a.descripcion else 'Sanación Alternativa',
-                'url': a.urlAnuncio if a.urlAnuncio else '#'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error cargando datos de la DB: {e}")
-
-    try:
-        empresa = Empresa.query.filter_by(slug="ac3785dd").first()
-        if not empresa:
-            logger.error("No se encontró la empresa Sanación Alternativa (slug ac3785dd).")
-            error_horarios = True
-        else:
-            ahora = datetime.now()
-            fecha_fin = ahora.date() + timedelta(days=14)
-            id_disponible = EstatusCita.id_estatus("Disponible")
-            if id_disponible is None:
-                logger.error("No se encontró el estatus 'Disponible' para consultar horarios.")
-                error_horarios = True
-                citas = []
-            else:
-                citas = db.session.query(Cita.fechaCita, Cita.horaCita).filter(
-                    Cita.idEmpresa == empresa.idEmpresa,
-                    Cita.idUsuario == 4,
-                    Cita.idEstatus == id_disponible,
-                    Cita.idCliente.is_(None),
-                    Cita.fechaCita >= ahora.date(),
-                    Cita.fechaCita <= fecha_fin,
-                    or_(
-                        Cita.fechaCita > ahora.date(),
-                        and_(
-                            Cita.fechaCita == ahora.date(),
-                            Cita.horaCita >= ahora.time(),
-                        ),
-                    ),
-                ).order_by(Cita.fechaCita, Cita.horaCita).all()
-
-            nombres_dias = (
-                "lunes", "martes", "miércoles", "jueves",
-                "viernes", "sábado", "domingo",
-            )
-            nombres_meses = (
-                "enero", "febrero", "marzo", "abril", "mayo", "junio",
-                "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-            )
-            grupos = {}
-            for cita in citas:
-                fecha = cita.fechaCita
-                if fecha not in grupos:
-                    if fecha == ahora.date():
-                        titulo = "Hoy"
-                    elif fecha == ahora.date() + timedelta(days=1):
-                        titulo = "Mañana"
-                    else:
-                        titulo = nombres_dias[fecha.weekday()].capitalize()
-                    grupos[fecha] = {
-                        "fecha": fecha,
-                        "titulo": titulo,
-                        "fecha_larga": f"{nombres_dias[fecha.weekday()]}, {fecha.day} de {nombres_meses[fecha.month - 1]}",
-                        "horarios": [],
-                    }
-                grupos[fecha]["horarios"].append({
-                    "hora": cita.horaCita.strftime("%H:%M"),
-                })
-            horarios_por_dia = list(grupos.values())
-    except Exception:
-        logger.exception("Error consultando horarios de Sanación Alternativa para el usuario 4.")
-        error_horarios = True
-
-    return render_template('index.html', 
-                           frase=frase_texto, 
-                           anuncios=anuncios_limpios,
-                           horarios_por_dia=horarios_por_dia,
-                           error_horarios=error_horarios) # Enviamos la lista limpia
-    
-    
-
-
-@app.route('/contacto/publico', methods=['POST'])
-def contacto_publico():
-    
-    datos = {
-        'asunto-correo': request.form.get('asunto-correo'),
-        'nombre': request.form.get('nombre'),
-        'correo': request.form.get('correo'),
-        'asunto': request.form.get('asunto'),
-        'mensaje': request.form.get('mensaje')
-    }
-    
-    empresa_principal = Empresa.query.get(1)
-    if not empresa_principal or not empresa_principal.correoContacto:
-        return redirect(url_for('index'))
-
-    cuerpo = f"""
-    <html>
-    <body>
-        <p><strong>Nombre:</strong> {datos['nombre']}</p>
-        <p><strong>Correo:</strong> {datos['correo']}</p>
-        <p><strong>Asunto:</strong> {datos['asunto']}</p>
-        <hr>
-        <p><strong>Mensaje:</strong><br>{datos['mensaje']}</p>
-    </body>
-    </html>
-    """
-    
-    exito = enviar_correo_base(empresa_principal.correoContacto, datos['asunto-correo'], cuerpo, datos['correo'])
-    
-    #Donde se muestra lo que se manda con flash?
-    if exito:
-        flash("¡Gracias! Tu mensaje ha sido enviado a CitaNet.", "success")
-    else:
-        flash("Hubo un problema técnico al enviar el correo.", "danger")
-
-    return redirect(url_for('index'))
-
-@app.route('/seleccionar-empresa')
-def seleccionar_empresa():
-    # Llegar a esta pantalla (por navegación normal o por el botón "atrás"
-    # del navegador tras un login) significa iniciar el flujo de selección.
-    # Limpiamos la sesión para que no quede idUsuario/tipoUsuario/idEmpresa
-    # de un acceso previo que el atajo de usuarios.login() pueda reutilizar.
-    session.clear()
-
-    destino_solicitado = request.args.get('destino', 'cliente')
-    
-    # Traemos solo empresas activas y con slug, sin traer CitaNet
-    empresas = Empresa.query.filter(
-        Empresa.slug.isnot(None),
-        Empresa.idEmpresa != 1
-    ).all()
-    return render_template("seleccionar_empresa.html", empresas=empresas, destino=destino_solicitado)
-
-@app.context_processor
-def inject_constants():
-    return dict(C=const)
-
-# ----------------------------------------
-# REGISTRO DE BLUEPRINTS
-# ----------------------------------------
-app.register_blueprint(usuarios_bp)
-app.register_blueprint(cliente_bp)
-app.register_blueprint(pagos_bp)
-app.register_blueprint(pagos_mp_bp)
-app.register_blueprint(frases_bp)
-app.register_blueprint(productos_bp)
-app.register_blueprint(citas_admin_bp)
-app.register_blueprint(citas_cliente_bp)
-app.register_blueprint(ver_citas_bp)
-app.register_blueprint(empresas_bp)
-app.register_blueprint(admin_bp)
-app.register_blueprint(versiones_bp)
-app.register_blueprint(verificar_bp)
-app.register_blueprint(publicidad_bp)
-app.register_blueprint(codigos_telefono_bp)
-app.register_blueprint(vendedores_bp)
-app.register_blueprint(whatsapp_bp)
-app.register_blueprint(movil_bp)
+    horarios_por_dia, error_horarios = obtener_horarios()
+    return render_template(
+        "index.html",
+        horarios_por_dia=horarios_por_dia,
+        error_horarios=error_horarios,
+    )
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    # Solo para pruebas locales; en el servidor lo ejecuta Gunicorn (app:app)
+    app.run(host="0.0.0.0", port=5000)
