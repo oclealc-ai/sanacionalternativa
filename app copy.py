@@ -1,74 +1,33 @@
-from flask                       import flash, Flask, render_template, redirect, request, session, url_for, send_from_directory
-from flask_cors                  import CORS
-from flask_jwt_extended          import JWTManager
-from datetime                    import datetime
-from correo                      import enviar_correo_base
-from sqlalchemy.orm              import joinedload
-from sqlalchemy                  import func
-from modelos                     import db, Frase, Empresa, Publicidad, Plan, Version, VisitaIndex, movCuenta
-from routes.usuarios             import usuarios_bp
-from routes.cliente              import cliente_bp
-from routes.frases               import frases_bp
-from routes.productos            import productos_bp
-from routes.citas_admin          import citas_admin_bp
-from routes.citas_cliente        import citas_cliente_bp
-from routes.ver_citas            import ver_citas_bp
-from routes.empresas             import empresas_bp
-from routes.admin                import admin_bp
-from routes.versiones            import versiones_bp
-from routes.verificar            import verificar_bp
-from routes.publicidad           import publicidad_bp
-from routes.codigos_telefono     import codigos_telefono_bp
-from routes.vendedores           import vendedores_bp
-from routes.pagos                import pagos_bp
-from routes.pagos_mp             import pagos_mp_bp
-from whatsapp                    import whatsapp_bp
-from constantes                  import const
-from movil                       import movil_bp
-from firebase_admin             import credentials
+from datetime import datetime, timedelta
 
-import firebase_admin
+from flask import flash, Flask, render_template, redirect, request, session, url_for
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
+from modelos import db, Frase, Empresa, Anuncio, Cita, EstatusCita
+from correo import enviar_correo_base
 import logging
 import config
-import os
-import sys
-import threading
-import requests
 
 # Configuración de Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates")
-CORS(app, supports_credentials=True) # Esto es vital para que Android/iPhone no sean bloqueados, 
-                                     # supports_credentials permite que viaje la sesión
+CORS(app, supports_credentials=True)
 
 app.secret_key = "QWERTY12345!@#$"
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads', 'apks')
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 Megabytes
-
-# Una frase secreta que solo tú sepas para proteger los tokens
 app.config["JWT_SECRET_KEY"] = "Citanet_Seguridad_2026_Movel" 
-jwt = JWTManager(app)
 
+jwt = JWTManager(app)
 db.init_app(app)
 
-# --- AJUSTE: Filtro para formatear moneda en plantillas ---
-#@app.template_filter('format_currency')
-#def format_currency(value):
-#    if value is None:
-#        return "$0.00"
-#    return "${:,.2f}".format(value)
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-@app.route("/")
-def home():
-    return redirect("/index")
+# ----------------------------------------
+# RUTAS PRINCIPALES
+# ----------------------------------------
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -174,10 +133,8 @@ def index():
     
     
 
-
 @app.route('/contacto/publico', methods=['POST'])
 def contacto_publico():
-    
     datos = {
         'asunto-correo': request.form.get('asunto-correo'),
         'nombre': request.form.get('nombre'),
@@ -188,6 +145,7 @@ def contacto_publico():
     
     empresa_principal = Empresa.query.get(1)
     if not empresa_principal or not empresa_principal.correoContacto:
+        flash("No se encontró configuración de correo.", "danger")
         return redirect(url_for('index'))
 
     cuerpo = f"""
@@ -204,9 +162,8 @@ def contacto_publico():
     
     exito = enviar_correo_base(empresa_principal.correoContacto, datos['asunto-correo'], cuerpo, datos['correo'])
     
-    #Donde se muestra lo que se manda con flash?
     if exito:
-        flash("¡Gracias! Tu mensaje ha sido enviado a CitaNet.", "success")
+        flash("¡Gracias! Tu mensaje ha sido enviado.", "success")
     else:
         flash("Hubo un problema técnico al enviar el correo.", "danger")
 
@@ -214,47 +171,12 @@ def contacto_publico():
 
 @app.route('/seleccionar-empresa')
 def seleccionar_empresa():
-    # Llegar a esta pantalla (por navegación normal o por el botón "atrás"
-    # del navegador tras un login) significa iniciar el flujo de selección.
-    # Limpiamos la sesión para que no quede idUsuario/tipoUsuario/idEmpresa
-    # de un acceso previo que el atajo de usuarios.login() pueda reutilizar.
-    session.clear()
-
     destino_solicitado = request.args.get('destino', 'cliente')
-    
-    # Traemos solo empresas activas y con slug, sin traer CitaNet
-    empresas = Empresa.query.filter(
-        Empresa.slug.isnot(None),
-        Empresa.idEmpresa != 1
-    ).all()
+    try:
+        empresas = Empresa.query.filter(Empresa.slug.isnot(None)).all()
+    except:
+        empresas = []
     return render_template("seleccionar_empresa.html", empresas=empresas, destino=destino_solicitado)
 
-@app.context_processor
-def inject_constants():
-    return dict(C=const)
-
-# ----------------------------------------
-# REGISTRO DE BLUEPRINTS
-# ----------------------------------------
-app.register_blueprint(usuarios_bp)
-app.register_blueprint(cliente_bp)
-app.register_blueprint(pagos_bp)
-app.register_blueprint(pagos_mp_bp)
-app.register_blueprint(frases_bp)
-app.register_blueprint(productos_bp)
-app.register_blueprint(citas_admin_bp)
-app.register_blueprint(citas_cliente_bp)
-app.register_blueprint(ver_citas_bp)
-app.register_blueprint(empresas_bp)
-app.register_blueprint(admin_bp)
-app.register_blueprint(versiones_bp)
-app.register_blueprint(verificar_bp)
-app.register_blueprint(publicidad_bp)
-app.register_blueprint(codigos_telefono_bp)
-app.register_blueprint(vendedores_bp)
-app.register_blueprint(whatsapp_bp)
-app.register_blueprint(movil_bp)
-
-
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
