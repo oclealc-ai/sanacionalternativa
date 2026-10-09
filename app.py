@@ -1,17 +1,12 @@
-from flask import Flask, render_template, redirect
-from modelos import db, Frase
+from datetime import datetime, timedelta
 
-from routes.usuarios          import usuarios_bp
-from routes.paciente          import paciente_bp
-from routes.frases            import frases_bp
-from routes.citas_admin       import citas_admin_bp
-from routes.citas_paciente    import citas_paciente_bp
-from routes.ver_citas         import ver_citas_bp
-from routes.empresas          import empresas_bp
-from routes.verificar         import verificar_bp
-from routes.anuncios_paciente import anuncios_paciente_bp
-from routes.codigos_telefono  import codigos_telefono_bp
-
+from flask import flash, Flask, render_template, redirect, request, session, url_for
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
+from modelos import db, Frase, Empresa, Anuncio, Cita, EstatusCita
+from correo import enviar_correo_base
 import logging
 import config
 
@@ -20,11 +15,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates")
-app.secret_key = "QWERTY12345!@#$"
+CORS(app, supports_credentials=True)
 
+app.secret_key = "QWERTY12345!@#$"
 app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_SECRET_KEY"] = "Citanet_Seguridad_2026_Movel" 
 
+jwt = JWTManager(app)
 db.init_app(app)
 
 # ----------------------------------------
@@ -35,29 +33,150 @@ db.init_app(app)
 def page_not_found(e):
     return render_template("404.html"), 404
 
-@app.route("/")
-def home():
-    return redirect("/index")
-
+@app.route('/')
 @app.route('/index')
 def index():
-    ultima_frase = Frase.query.order_by(Frase.fecha.desc()).first()
-    frase_texto = ultima_frase.frase if ultima_frase else "Bienvenido al sistema"
-    return render_template("index.html", frase=frase_texto)
+    session.clear()
+    
+    frase_texto = "Tu bienestar es nuestra prioridad"
+    anuncios_limpios = [] # Usaremos una lista nueva
+    horarios_por_dia = []
+    error_horarios = False
 
-# ----------------------------------------
-# REGISTRO DE BLUEPRINTS
-# ----------------------------------------
-app.register_blueprint(usuarios_bp)
-app.register_blueprint(paciente_bp)
-app.register_blueprint(frases_bp)
-app.register_blueprint(citas_admin_bp)
-app.register_blueprint(citas_paciente_bp)
-app.register_blueprint(ver_citas_bp)
-app.register_blueprint(empresas_bp)
-app.register_blueprint(verificar_bp)
-app.register_blueprint(anuncios_paciente_bp)
-app.register_blueprint(codigos_telefono_bp)
+    try:
+        # Frase
+        ultima_frase = Frase.query.order_by(Frase.fecha.desc()).first()
+        if ultima_frase and ultima_frase.frase:
+            frase_texto = ultima_frase.frase
+        
+        # Anuncios: Los convertimos a diccionarios simples para evitar errores de Jinja2
+        anuncios_db = Anuncio.query.filter_by(activo=True)\
+            .order_by(Anuncio.fechaCreacion.desc()).all()
+            
+        for a in anuncios_db:
+            anuncios_limpios.append({
+                'imagen': a.imagen if a.imagen else '/static/anuncios/default.jpg',
+                'descripcion': a.descripcion if a.descripcion else 'Sanación Alternativa',
+                'url': a.urlAnuncio if a.urlAnuncio else '#'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error cargando datos de la DB: {e}")
+
+    try:
+        empresa = Empresa.query.filter_by(slug="ac3785dd").first()
+        if not empresa:
+            logger.error("No se encontró la empresa Sanación Alternativa (slug ac3785dd).")
+            error_horarios = True
+        else:
+            ahora = datetime.now()
+            fecha_fin = ahora.date() + timedelta(days=14)
+            id_disponible = EstatusCita.id_estatus("Disponible")
+            if id_disponible is None:
+                logger.error("No se encontró el estatus 'Disponible' para consultar horarios.")
+                error_horarios = True
+                citas = []
+            else:
+                citas = db.session.query(Cita.fechaCita, Cita.horaCita).filter(
+                    Cita.idEmpresa == empresa.idEmpresa,
+                    Cita.idUsuario == 4,
+                    Cita.idEstatus == id_disponible,
+                    Cita.idCliente.is_(None),
+                    Cita.fechaCita >= ahora.date(),
+                    Cita.fechaCita <= fecha_fin,
+                    or_(
+                        Cita.fechaCita > ahora.date(),
+                        and_(
+                            Cita.fechaCita == ahora.date(),
+                            Cita.horaCita >= ahora.time(),
+                        ),
+                    ),
+                ).order_by(Cita.fechaCita, Cita.horaCita).all()
+
+            nombres_dias = (
+                "lunes", "martes", "miércoles", "jueves",
+                "viernes", "sábado", "domingo",
+            )
+            nombres_meses = (
+                "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+            )
+            grupos = {}
+            for cita in citas:
+                fecha = cita.fechaCita
+                if fecha not in grupos:
+                    if fecha == ahora.date():
+                        titulo = "Hoy"
+                    elif fecha == ahora.date() + timedelta(days=1):
+                        titulo = "Mañana"
+                    else:
+                        titulo = nombres_dias[fecha.weekday()].capitalize()
+                    grupos[fecha] = {
+                        "fecha": fecha,
+                        "titulo": titulo,
+                        "fecha_larga": f"{nombres_dias[fecha.weekday()]}, {fecha.day} de {nombres_meses[fecha.month - 1]}",
+                        "horarios": [],
+                    }
+                grupos[fecha]["horarios"].append({
+                    "hora": cita.horaCita.strftime("%H:%M"),
+                })
+            horarios_por_dia = list(grupos.values())
+    except Exception:
+        logger.exception("Error consultando horarios de Sanación Alternativa para el usuario 4.")
+        error_horarios = True
+
+    return render_template('index.html', 
+                           frase=frase_texto, 
+                           anuncios=anuncios_limpios,
+                           horarios_por_dia=horarios_por_dia,
+                           error_horarios=error_horarios) # Enviamos la lista limpia
+    
+    
+
+@app.route('/contacto/publico', methods=['POST'])
+def contacto_publico():
+    datos = {
+        'asunto-correo': request.form.get('asunto-correo'),
+        'nombre': request.form.get('nombre'),
+        'correo': request.form.get('correo'),
+        'asunto': request.form.get('asunto'),
+        'mensaje': request.form.get('mensaje')
+    }
+    
+    empresa_principal = Empresa.query.get(1)
+    if not empresa_principal or not empresa_principal.correoContacto:
+        flash("No se encontró configuración de correo.", "danger")
+        return redirect(url_for('index'))
+
+    cuerpo = f"""
+    <html>
+    <body>
+        <p><strong>Nombre:</strong> {datos['nombre']}</p>
+        <p><strong>Correo:</strong> {datos['correo']}</p>
+        <p><strong>Asunto:</strong> {datos['asunto']}</p>
+        <hr>
+        <p><strong>Mensaje:</strong><br>{datos['mensaje']}</p>
+    </body>
+    </html>
+    """
+    
+    exito = enviar_correo_base(empresa_principal.correoContacto, datos['asunto-correo'], cuerpo, datos['correo'])
+    
+    if exito:
+        flash("¡Gracias! Tu mensaje ha sido enviado.", "success")
+    else:
+        flash("Hubo un problema técnico al enviar el correo.", "danger")
+
+    return redirect(url_for('index'))
+
+@app.route('/seleccionar-empresa')
+def seleccionar_empresa():
+    destino_solicitado = request.args.get('destino', 'cliente')
+    try:
+        empresas = Empresa.query.filter(Empresa.slug.isnot(None)).all()
+    except:
+        empresas = []
+    return render_template("seleccionar_empresa.html", empresas=empresas, destino=destino_solicitado)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

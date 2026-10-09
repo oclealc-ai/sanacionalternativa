@@ -6,6 +6,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def enviar_correo_prueba(destino):
+    # Podrías incluso usar HTML en el futuro para que se vea más profesional
+    mensaje = (
+        f"Hola!\n\n"
+        f"Este es un mensaje de prueba ya arreglado.\n"
+    )
+ 
+    msg = MIMEText(mensaje)
+    msg['Subject'] = 'Mensaje de Prueba - CitaNet'
+    msg['From'] = config.SMTP_USER
+    msg['To'] = destino
+
+    try:
+        with smtplib.SMTP(config.SMTP_SERVER, config.SMTP_PORT) as server:
+            server.starttls()  # Cifrado de la conexión
+            server.login(config.SMTP_USER, config.SMTP_PASSWORD)
+            server.send_message(msg)
+            return True
+    except Exception as e:
+        logger.error(f"❌ Error al enviar correo a {destino}: {str(e)}")
+        return False
+    
+
 def enviar_correo(destino, token):
     url_verificacion = f"{config.URL_BASE}/verificar/{token}"
     
