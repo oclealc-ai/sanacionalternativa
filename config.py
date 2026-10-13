@@ -22,6 +22,8 @@ if os.path.exists(env_file):
 else:
     logger.info(f"No se encontró el archivo env.{env_name}, usando variables de entorno del sistema.")
 
+SECRET_KEY = "LlaveSecretaDeSanacionAlternativa"
+
 # --- Base de Datos (Parámetros sueltos para SQL puro) ---
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_USER = os.getenv("DB_USER")
