@@ -324,7 +324,9 @@
         $("rsTexto").textContent = "¿Deseas reservar el " + p.texto + "?";
         $("rsPregunta").hidden = false;
         $("rsSi").disabled = false;
+        $("rsNo").disabled = false;
         $("rsMsg").hidden = true;
+        $("rsListo").textContent = "Listo";
         $("rsListo").hidden = true;
         $("rsRelogin").hidden = true;
         $("dlgReserva").showModal();
@@ -369,6 +371,7 @@
             $("rsTitulo").textContent = "¡Reserva realizada!";
             $("rsTexto").textContent = "Tu cita quedó reservada. Te enviamos la confirmación por WhatsApp.";
             $("rsMsg").hidden = true;
+            $("rsListo").textContent = "Listo";
             $("rsListo").hidden = false;
         } else if (data.sesion_expirada) {
             $("rsTexto").textContent = "";
@@ -397,6 +400,7 @@
 (function () {
     const $ = id => document.getElementById(id);
     const dlg = $("dlgAcceso");
+    const CLAVE = "sa_pendiente";
     const URL_ENVIAR = "{{ url_for('acceso_enviar_codigo') }}";
     const URL_VALIDAR = "{{ url_for('acceso_validar_codigo') }}";
     const URL_ALTA = "{{ url_for('acceso_alta') }}";
@@ -430,6 +434,8 @@
     window.abrirAcceso = function () { reiniciarLogin(); dlg.showModal(); };
     $("accX").addEventListener("click", () => dlg.close());
     dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+    // Si se cierra el cuadro sin entrar, se descarta el horario elegido (no queda uno viejo para el próximo login)
+    dlg.addEventListener("close", () => { try { sessionStorage.removeItem(CLAVE); } catch (e) {} });
     const btnHeader = $("abrirAcceso");
     if (btnHeader) btnHeader.addEventListener("click", () => window.abrirAcceso());
 
