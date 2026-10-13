@@ -16,6 +16,54 @@
             background-size: cover;
             background-position: center;
         }
+
+        /* ===== Cuadros de acceso y reserva (estilo de Sanación Alternativa) ===== */
+        .dlg {
+            position: fixed; inset: 0; margin: auto;
+            width: min(420px, 92vw); height: fit-content; max-height: 92vh; overflow-y: auto;
+            padding: 0; border: 1px solid #e7e5e4; border-top: 5px solid #065f46; border-radius: 18px;
+            background: #fffcf0; color: #292524; font-family: 'Quicksand', sans-serif;
+            box-shadow: 0 24px 60px rgba(41, 37, 36, .35);
+        }
+        .dlg::backdrop { background: rgba(41, 37, 36, .55); backdrop-filter: blur(2px); }
+        .dlg [hidden] { display: none !important; }
+        .dlg-caja { position: relative; padding: 34px 30px 28px; text-align: center; }
+        .dlg h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; line-height: 1.1; font-weight: 600; color: #1c1917; }
+        .dlg-orn { color: #065f46; margin: 6px 0 10px; letter-spacing: .5em; }
+        .dlg-sub { color: #78716c; font-size: .92rem; font-weight: 400; line-height: 1.5; margin-bottom: 20px; }
+        .dlg label { display: block; font-size: .82rem; font-weight: 600; letter-spacing: .04em; color: #57534e; margin-bottom: 7px; }
+        .dlg input, .dlg select {
+            display: block; width: 100%; padding: 12px 14px; margin-bottom: 16px;
+            border: 1px solid #d6d3d1; border-radius: 12px; background: #fff;
+            font: inherit; font-size: 1rem; color: #292524; text-align: center;
+        }
+        .dlg input::placeholder { color: #a8a29e; }
+        .dlg input[readonly] { background: #f5f5f4; color: #57534e; }
+        .dlg input:focus, .dlg select:focus { outline: 0; border-color: #065f46; box-shadow: 0 0 0 3px rgba(6, 95, 70, .18); }
+        .dlg-btn {
+            display: block; width: 100%; padding: 13px 20px; border-radius: 999px; cursor: pointer;
+            border: 1px solid #065f46; background: #065f46; color: #fff;
+            font: inherit; font-weight: 600; letter-spacing: .03em; transition: .2s;
+            box-shadow: 0 6px 14px rgba(6, 78, 59, .15);
+        }
+        .dlg-btn:hover:not(:disabled) { background: #064e3b; border-color: #064e3b; }
+        .dlg-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .dlg-btn-sec { background: transparent; color: #065f46; box-shadow: none; margin-top: 10px; }
+        .dlg-btn-sec:hover:not(:disabled) { background: #ecfdf5; color: #064e3b; }
+        .dlg-sep { margin-top: 22px; padding-top: 22px; border-top: 1px dashed #d6d3d1; }
+        .dlg-codigo { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem !important; font-weight: 600; letter-spacing: .35em; padding-left: calc(14px + .35em) !important; }
+        .dlg-x { position: absolute; top: 8px; right: 14px; background: none; border: 0; font-size: 1.8rem; line-height: 1; color: #78716c; cursor: pointer; }
+        .dlg-x:hover { color: #065f46; }
+        .dlg-msg { margin-top: 16px; padding: 10px 12px; border-radius: 12px; font-size: .9rem; }
+        .dlg-msg.es-error { background: #fde8e4; color: #8a2a14; }
+        .dlg-msg.es-ok { background: #d1fae5; color: #065f46; }
+        .dlg-timer { margin: -8px 0 14px; font-size: .85rem; font-weight: 600; color: #065f46; min-height: 1.1em; }
+        .dlg-enlace { background: none; border: 0; margin-top: 14px; font: inherit; font-size: .85rem; color: #78716c; cursor: pointer; text-decoration: underline; }
+        .dlg-enlace:hover { color: #065f46; }
+        .dlg-grid { display: grid; grid-template-columns: 1fr; gap: 0; text-align: left; }
+        .dlg-grid label { text-align: left; }
+        .dlg-grid input, .dlg-grid select { text-align: left; }
+        .dlg-grid .dlg-codigo { text-align: center; }
     </style>
 </head>
 <body class="bg-[#fffcf0] text-stone-800 antialiased">
@@ -25,13 +73,21 @@
             <div class="text-2xl font-serif font-bold tracking-tight text-stone-800">
                 Sanación <span class="italic text-emerald-800">Alternativa</span>
             </div>
-            <div class="flex items-center space-x-8 text-sm font-semibold tracking-wider uppercase">
+            <div class="flex items-center flex-wrap justify-end gap-x-8 gap-y-2 text-sm font-semibold tracking-wider uppercase">
                 <a href="#horarios" class="text-stone-600 hover:text-emerald-800 transition">Horarios</a>
                 <a href="#servicios" class="text-stone-600 hover:text-emerald-800 transition">Servicios</a>
                 <a href="https://www.citanet.com.mx/e/ac3785dd?destino=usuario" class="text-stone-600 hover:text-stone-900 transition">Staff</a>
                 <a href="https://www.citanet.com.mx/e/ac3785dd" class="bg-emerald-800 text-white px-6 py-2 rounded-full hover:bg-emerald-900 transition shadow-md shadow-emerald-900/10">
                     Agendar Sesión
                 </a>
+                {% if cliente %}
+                    <span class="normal-case tracking-normal font-medium text-stone-600">Hola, <strong class="text-stone-800">{{ cliente.nombre }}</strong></span>
+                    <form method="post" action="{{ url_for('salir') }}">
+                        <button type="submit" class="normal-case tracking-normal font-medium text-emerald-800 underline hover:text-emerald-900 transition">Cerrar sesión</button>
+                    </form>
+                {% else %}
+                    <button type="button" id="abrirAcceso" class="border border-emerald-800 text-emerald-800 px-5 py-2 rounded-full hover:bg-emerald-800 hover:text-white transition">Iniciar sesión</button>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -56,7 +112,7 @@
             <span class="text-emerald-800 font-bold tracking-[0.2em] uppercase text-xs">Agenda abierta</span>
             <h2 class="font-serif text-4xl text-stone-900 mt-2 mb-3">Horarios disponibles</h2>
             <p class="text-sm text-stone-500 max-w-xl mx-auto font-light">
-                Consulta los espacios disponibles para las próximas dos semanas. Elige un horario para continuar en CitaNet.
+                Consulta los espacios disponibles para las próximas dos semanas. Elige un horario para reservar tu sesión.
             </p>
             <div class="w-12 h-0.5 bg-emerald-800 mx-auto mt-4"></div>
         </div>
@@ -73,18 +129,16 @@
                         <p class="mt-1 text-xs capitalize text-stone-500">{{ dia.fecha_larga }}</p>
                         <div class="mt-5 flex flex-wrap gap-2">
                             {% for horario in dia.horarios %}
-                                <a href="https://www.citanet.com.mx/e/ac3785dd"
-                                   title="Continúa en CitaNet para reservar el {{ dia.fecha_larga }} a las {{ horario.hora }}; inicia sesión o regístrate con tu teléfono."
-                                   class="inline-flex min-h-10 items-center justify-center rounded-full border border-emerald-800/20 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800 hover:bg-emerald-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">
-                                    {{ horario.hora }}
-                                </a>
+                                <button type="button" data-id-cita="{{ horario.idCita }}" data-texto="{{ dia.fecha_larga }} a las {{ horario.hora }}"
+                                        title="Reservar el {{ dia.fecha_larga }} a las {{ horario.hora }}"
+                                        class="slot-horario inline-flex min-h-10 items-center justify-center rounded-full border border-emerald-800/20 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800 hover:bg-emerald-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 cursor-pointer">{{ horario.hora }}</button>
                             {% endfor %}
                         </div>
                     </article>
                 {% endfor %}
             </div>
             <p class="mt-6 text-center text-xs text-stone-500">
-                Para reservar, inicia sesión o regístrate en CitaNet con tu teléfono. Después podrás elegir el horario en el calendario.
+                Elige un horario: si aún no has iniciado sesión te pediremos tu teléfono, y después solo confirmas tu reserva.
             </p>
         {% else %}
             <p class="max-w-2xl mx-auto rounded-xl border border-stone-200 bg-white/70 px-5 py-4 text-center text-sm text-stone-600">
@@ -165,6 +219,399 @@
             &copy; 2026 Todos los derechos reservados.
         </div>
     </footer>
+
+
+{% if cliente %}
+<dialog id="dlgReserva" class="dlg">
+    <div class="dlg-caja">
+        <button type="button" class="dlg-x" id="rsX" aria-label="Cerrar">&times;</button>
+        <h2 id="rsTitulo">Reservar horario</h2>
+        <div class="dlg-orn">✦</div>
+        <p class="dlg-sub" id="rsTexto"></p>
+        <div id="rsPregunta">
+            <button type="button" class="dlg-btn" id="rsSi">Sí, reservar</button>
+            <button type="button" class="dlg-btn dlg-btn-sec" id="rsNo">Cancelar</button>
+        </div>
+        <p id="rsMsg" class="dlg-msg" hidden></p>
+        <button type="button" class="dlg-btn" id="rsListo" hidden style="margin-top:18px">Listo</button>
+        <button type="button" class="dlg-btn" id="rsRelogin" hidden style="margin-top:18px">Iniciar sesión</button>
+    </div>
+</dialog>
+{% else %}
+<dialog id="dlgAcceso" class="dlg">
+    <div class="dlg-caja">
+        <button type="button" class="dlg-x" id="accX" aria-label="Cerrar">&times;</button>
+        <h2 id="accTitulo">Accede a tu cuenta</h2>
+        <div class="dlg-orn">✦</div>
+        <p class="dlg-sub" id="accSub">Te enviaremos un código por WhatsApp.</p>
+
+        <div id="vLogin">
+            <label for="lgTel">Tu número de celular</label>
+            <input type="tel" id="lgTel" maxlength="10" inputmode="numeric" autocomplete="tel-national" placeholder="10 dígitos (ej. 8112345678)">
+
+            <div id="lgPaisGrupo" hidden>
+                <label for="lgPais">Selecciona tu país</label>
+                <select id="lgPais"></select>
+            </div>
+
+            <button type="button" class="dlg-btn" id="lgEnviar">Recibir código</button>
+
+            <div id="lgCodigoGrupo" class="dlg-sep" hidden>
+                <label for="lgCodigo">Código de 6 dígitos</label>
+                <input type="text" id="lgCodigo" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" class="dlg-codigo">
+                <button type="button" class="dlg-btn" id="lgValidar">Verificar e ingresar</button>
+            </div>
+        </div>
+
+        <div id="vAlta" hidden>
+            <div class="dlg-grid">
+                <label for="alNombre">Nombre completo</label>
+                <input type="text" id="alNombre" autocomplete="name" placeholder="Nombre y apellido">
+
+                <label for="alFecha">Fecha de nacimiento</label>
+                <input type="date" id="alFecha" autocomplete="bday">
+
+                <label for="alTel">Teléfono</label>
+                <input type="tel" id="alTel" maxlength="10" inputmode="numeric" readonly>
+
+                <label for="alPais">Código del país</label>
+                <select id="alPais">
+                    <option value="">Selecciona tu país</option>
+                    {% for pais in paises %}
+                    <option value="{{ pais.idPais }}">{{ pais.nombre }} ({{ pais.codigoArea }})</option>
+                    {% endfor %}
+                </select>
+
+                <label for="alCorreo">Correo electrónico</label>
+                <input type="email" id="alCorreo" autocomplete="email" placeholder="ejemplo@correo.com">
+            </div>
+
+            <button type="button" class="dlg-btn dlg-btn-sec" id="alEnviar" style="margin-top:0">Enviar código verificador</button>
+            <div class="dlg-timer" id="alTimer"></div>
+
+            <label for="alCodigo">Código de 6 dígitos</label>
+            <input type="text" id="alCodigo" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="Código de WhatsApp" class="dlg-codigo">
+            <button type="button" class="dlg-btn" id="alGuardar">Guardar e ingresar</button>
+            <button type="button" class="dlg-enlace" id="alVolver">← Volver</button>
+        </div>
+
+        <p id="accMsg" class="dlg-msg" hidden></p>
+    </div>
+</dialog>
+{% endif %}
+
+<script>
+/* Reservar: si hay sesión se confirma y se reserva; si no, se pide el acceso y se continúa al volver. */
+(function () {
+    const $ = id => document.getElementById(id);
+    const LOGUEADO = {{ 'true' if cliente else 'false' }};
+    const CLAVE = "sa_pendiente";
+    const URL_RESERVAR = "{{ url_for('acceso_reservar') }}";
+    const URL_SALIR = "{{ url_for('salir') }}";
+    let pendiente = null;
+
+    const guardar = p => { try { sessionStorage.setItem(CLAVE, JSON.stringify(p)); } catch (e) {} };
+    const leer = () => { try { return JSON.parse(sessionStorage.getItem(CLAVE) || "null"); } catch (e) { return null; } };
+    const borrar = () => { try { sessionStorage.removeItem(CLAVE); } catch (e) {} };
+
+    function mensaje(txt, error) {
+        const m = $("rsMsg");
+        m.hidden = false;
+        m.textContent = txt;
+        m.className = "dlg-msg " + (error ? "es-error" : "es-ok");
+    }
+
+    function abrirReserva(p) {
+        pendiente = p;
+        $("rsTitulo").textContent = "Reservar horario";
+        $("rsTexto").textContent = "¿Deseas reservar el " + p.texto + "?";
+        $("rsPregunta").hidden = false;
+        $("rsSi").disabled = false;
+        $("rsMsg").hidden = true;
+        $("rsListo").hidden = true;
+        $("rsRelogin").hidden = true;
+        $("dlgReserva").showModal();
+    }
+
+    document.querySelectorAll(".slot-horario").forEach(b => b.addEventListener("click", () => {
+        const p = {id: b.dataset.idCita, texto: b.dataset.texto};
+        if (LOGUEADO) { abrirReserva(p); return; }
+        guardar(p);
+        if (window.abrirAcceso) window.abrirAcceso();
+    }));
+
+    if (!LOGUEADO) return;
+
+    // Venía del login/alta con un horario elegido: se continúa directo a la confirmación
+    const previo = leer();
+    if (previo) { borrar(); abrirReserva(previo); }
+
+    $("rsX").addEventListener("click", () => $("dlgReserva").close());
+    $("rsNo").addEventListener("click", () => $("dlgReserva").close());
+    $("rsListo").addEventListener("click", () => location.reload());
+
+    $("rsSi").addEventListener("click", async () => {
+        $("rsSi").disabled = true;
+        $("rsNo").disabled = true;
+        mensaje("Reservando…", false);
+        let r, data = {};
+        try {
+            r = await fetch(URL_RESERVAR, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({idCita: pendiente.id})
+            });
+            try { data = await r.json(); } catch (e) {}
+        } catch (e) {
+            data = {ok: false, error: "No pudimos reservar. Intenta de nuevo."};
+        }
+        $("rsPregunta").hidden = true;
+        $("rsNo").disabled = false;
+
+        if (data.ok) {
+            $("rsTitulo").textContent = "¡Reserva realizada!";
+            $("rsTexto").textContent = "Tu cita quedó reservada. Te enviamos la confirmación por WhatsApp.";
+            $("rsMsg").hidden = true;
+            $("rsListo").hidden = false;
+        } else if (data.sesion_expirada) {
+            $("rsTexto").textContent = "";
+            mensaje(data.error || "Tu sesión expiró. Inicia sesión de nuevo.", true);
+            $("rsRelogin").hidden = false;
+        } else {
+            $("rsTexto").textContent = "";
+            mensaje(data.error || "No pudimos reservar este horario.", true);
+            $("rsListo").textContent = "Cerrar";
+            $("rsListo").hidden = false;     // al cerrar se recarga para refrescar los horarios
+        }
+    });
+
+    $("rsRelogin").addEventListener("click", async () => {
+        guardar(pendiente);
+        try { sessionStorage.setItem("sa_abrir_login", "1"); } catch (e) {}
+        try { await fetch(URL_SALIR, {method: "POST"}); } catch (e) {}
+        location.reload();
+    });
+})();
+</script>
+
+{% if not cliente %}
+<script>
+/* Acceso: mismo flujo que login_cliente.html (teléfono -> código por WhatsApp) y alta de CitaNet. */
+(function () {
+    const $ = id => document.getElementById(id);
+    const dlg = $("dlgAcceso");
+    const URL_ENVIAR = "{{ url_for('acceso_enviar_codigo') }}";
+    const URL_VALIDAR = "{{ url_for('acceso_validar_codigo') }}";
+    const URL_ALTA = "{{ url_for('acceso_alta') }}";
+    let telefono = "", idPais = null, selectorPaisVisible = false, intervalo = null;
+
+    function mensaje(txt, error = true) {
+        const m = $("accMsg");
+        m.hidden = false;
+        m.textContent = txt;
+        m.className = "dlg-msg " + (error ? "es-error" : "es-ok");
+    }
+    const sinMensaje = () => { $("accMsg").hidden = true; };
+
+    function vista(cual) {
+        const alta = cual === "alta";
+        $("vLogin").hidden = alta;
+        $("vAlta").hidden = !alta;
+        $("accTitulo").textContent = alta ? "Crea tu cuenta" : "Accede a tu cuenta";
+        $("accSub").textContent = alta ? "Completa tus datos para registrarte." : "Te enviaremos un código por WhatsApp.";
+    }
+
+    function reiniciarLogin() {
+        vista("login");
+        sinMensaje();
+        $("lgCodigoGrupo").hidden = true;
+        $("lgEnviar").disabled = false;
+        $("lgValidar").disabled = false;
+        $("lgCodigo").value = "";
+    }
+
+    window.abrirAcceso = function () { reiniciarLogin(); dlg.showModal(); };
+    $("accX").addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+    const btnHeader = $("abrirAcceso");
+    if (btnHeader) btnHeader.addEventListener("click", () => window.abrirAcceso());
+
+    // Se cerró la sesión de CitaNet al intentar reservar: se vuelve a pedir el acceso
+    try {
+        if (sessionStorage.getItem("sa_abrir_login")) {
+            sessionStorage.removeItem("sa_abrir_login");
+            window.abrirAcceso();
+            mensaje("Tu sesión expiró. Inicia sesión de nuevo para reservar.");
+        }
+    } catch (e) {}
+
+    async function post(url, cuerpo) {
+        const r = await fetch(url, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(cuerpo)
+        });
+        let data = {};
+        try { data = await r.json(); } catch (e) {}
+        return {r, data};
+    }
+
+    // ---------- Login ----------
+    function mostrarSelectorPais(paises) {
+        const sel = $("lgPais");
+        sel.replaceChildren(new Option("Selecciona tu país", ""));
+        (paises || []).forEach(p => sel.add(new Option(`${p.nombre} (${p.codigoArea})`, p.idPais)));
+        const ultimo = localStorage.getItem("citanet_ultimo_pais");
+        if (ultimo && [...sel.options].some(o => o.value === ultimo)) sel.value = ultimo;
+        $("lgPaisGrupo").hidden = false;
+        selectorPaisVisible = true;
+    }
+
+    $("lgEnviar").addEventListener("click", async () => {
+        telefono = $("lgTel").value.trim();
+        if (telefono.length < 10) { mensaje("Ingresa un número de 10 dígitos válido."); return; }
+
+        let paisElegido = "";
+        if (selectorPaisVisible) {
+            paisElegido = $("lgPais").value;
+            if (!paisElegido) { mensaje("Selecciona tu país para continuar."); return; }
+        }
+
+        $("lgEnviar").disabled = true;
+        try {
+            const {r, data} = await post(URL_ENVIAR, {telefono, idPais: paisElegido || undefined});
+            if (r.ok && data.status === "ok") {
+                idPais = data.idPais || paisElegido || null;
+                if (idPais) localStorage.setItem("citanet_ultimo_pais", idPais);
+                $("lgCodigoGrupo").hidden = false;
+                $("lgCodigo").focus();
+                mensaje("Código enviado por WhatsApp.", false);
+                return;
+            }
+            $("lgEnviar").disabled = false;
+            if (r.status === 300 || data.status === "ambiguo") {
+                mostrarSelectorPais(data.paises);
+                mensaje(data.msg || "Selecciona tu país para continuar.");
+            } else if (r.status === 404 || data.status === "no_encontrado") {
+                irAAlta(paisElegido);
+            } else {
+                mensaje(data.msg || "No pudimos enviar el código.");
+            }
+        } catch (e) {
+            $("lgEnviar").disabled = false;
+            mensaje("No pudimos enviar el código. Intenta de nuevo.");
+        }
+    });
+
+    $("lgValidar").addEventListener("click", async () => {
+        const codigo = $("lgCodigo").value.trim();
+        if (codigo.length < 6) { mensaje("Ingresa el código de 6 dígitos."); return; }
+        $("lgValidar").disabled = true;
+        try {
+            const {data} = await post(URL_VALIDAR, {telefono, idPais, codigo});
+            if (data.ok) { location.reload(); return; }   // el encabezado ya sale con el nombre
+            $("lgValidar").disabled = false;
+            mensaje(data.error || "Código incorrecto");
+        } catch (e) {
+            $("lgValidar").disabled = false;
+            mensaje("Error validando el código.");
+        }
+    });
+
+    // ---------- Alta ----------
+    function irAAlta(paisElegido) {
+        $("alTel").value = telefono;
+        const sel = $("alPais");
+        const ultimo = localStorage.getItem("citanet_ultimo_pais");
+        const mexico = [...sel.options].find(o => /^m[ée]xico/i.test(o.text));
+        if (paisElegido) sel.value = paisElegido;
+        else if (ultimo && [...sel.options].some(o => o.value === ultimo)) sel.value = ultimo;
+        else if (mexico) sel.value = mexico.value;
+        vista("alta");
+        mensaje("No encontramos tu cuenta. Completa tus datos para registrarte.");
+    }
+
+    $("alVolver").addEventListener("click", reiniciarLogin);
+    $("alPais").addEventListener("change", function () { if (this.value) localStorage.setItem("citanet_ultimo_pais", this.value); });
+
+    function temporizador() {
+        let seg = 60;
+        const btn = $("alEnviar");
+        btn.disabled = true;
+        clearInterval(intervalo);
+        intervalo = setInterval(() => {
+            $("alTimer").textContent = "Reenviar en " + seg + "s";
+            seg--;
+            if (seg < 0) {
+                clearInterval(intervalo);
+                $("alTimer").textContent = "";
+                btn.disabled = false;
+                btn.textContent = "Reenviar código";
+            }
+        }, 1000);
+    }
+
+    $("alEnviar").addEventListener("click", async () => {
+        const tel = $("alTel").value.trim();
+        if (!/^[0-9]{10}$/.test(tel)) { mensaje("Número inválido (10 dígitos)."); return; }
+        const pais = $("alPais").value;
+        if (!pais) { mensaje("Selecciona el código del país."); return; }
+        localStorage.setItem("citanet_ultimo_pais", pais);
+
+        $("alEnviar").disabled = true;
+        $("alEnviar").textContent = "Enviando...";
+        try {
+            const {data} = await post(URL_ENVIAR, {telefono: tel, idPais: pais, modo: "alta"});
+            if (data.status === "ok") {
+                mensaje("Código verificador enviado por WhatsApp.", false);
+                temporizador();
+            } else {
+                mensaje(data.msg || "Error enviando el código.");
+                $("alEnviar").disabled = false;
+                $("alEnviar").textContent = "Enviar código verificador";
+            }
+        } catch (e) {
+            mensaje("Error enviando el código.");
+            $("alEnviar").disabled = false;
+            $("alEnviar").textContent = "Enviar código verificador";
+        }
+    });
+
+    function nombreCompleto(n) {
+        const partes = n.trim().split(/\s+/).filter(Boolean);
+        const letras = /^[A-Za-zÀ-ÖØ-öø-ÿÑñ]+$/;
+        return partes.length >= 2 && partes.every(p => p.length >= 2 && letras.test(p));
+    }
+
+    $("alGuardar").addEventListener("click", async () => {
+        const cuerpo = {
+            nombreCliente: $("alNombre").value.trim(),
+            fechanac: $("alFecha").value,
+            telefono: $("alTel").value.trim(),
+            idPais: $("alPais").value,
+            correo: $("alCorreo").value.trim(),
+            codigo: $("alCodigo").value.trim()
+        };
+        if (!nombreCompleto(cuerpo.nombreCliente)) { mensaje("Ingresa tu nombre completo (nombre y apellido)."); return; }
+        if (!cuerpo.fechanac) { mensaje("Indica tu fecha de nacimiento."); return; }
+        if (!cuerpo.idPais) { mensaje("Selecciona el código del país."); return; }
+        if (!/^\S+@\S+\.\S+$/.test(cuerpo.correo)) { mensaje("Ingresa un correo válido."); return; }
+        if (!/^\d{6}$/.test(cuerpo.codigo)) { mensaje("Ingresa el código de 6 dígitos."); return; }
+
+        $("alGuardar").disabled = true;
+        try {
+            const {data} = await post(URL_ALTA, cuerpo);
+            if (data.ok) { location.reload(); return; }
+            $("alGuardar").disabled = false;
+            mensaje(data.error || "No pudimos completar el registro.");
+        } catch (e) {
+            $("alGuardar").disabled = false;
+            mensaje("No pudimos completar el registro. Intenta de nuevo.");
+        }
+    });
+})();
+</script>
+{% endif %}
 
 </body>
 </html>
