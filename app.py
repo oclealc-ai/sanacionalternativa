@@ -24,7 +24,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from sqlalchemy import and_, or_
 
 import config
-from modelos import db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais
+from modelos import db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais, Publicidad, movCuenta
 
 # ----------------------------------------
 # AJUSTES DEL SITIO
@@ -37,6 +37,13 @@ ZONA_HORARIA     = "America/Mexico_City"  # Las citas se guardan en hora local
 # CitaNet corre en el mismo servidor (gunicorn en 127.0.0.1:5001). Este sitio le pide
 # el código por WhatsApp, el alta y la reserva, así no se duplica nada de esa lógica.
 CITANET_INTERNAL_URL = getattr(config, "CITANET_INTERNAL_URL", "http://127.0.0.1:5001")
+
+# Publicidad (carrusel vertical): la misma que CitaNet muestra en su página.
+# Las imágenes viven en CitaNet; si config.py define PUBLICIDAD_IMG_BASE se usa esa URL base
+# (debe terminar en "/"), por ejemplo "https://www.citanet.com.mx/static/".
+PUBLICIDAD_IMG_BASE = getattr(config, "PUBLICIDAD_IMG_BASE", "https://www.citanet.com.mx/static/")
+PUBLICIDAD_MAX      = 20                  # Máximo de anuncios en el carrusel
+ID_EMPRESA_CITANET  = 1                   # Empresa maestra: sus anuncios no requieren pago
 
 NOMBRES_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 NOMBRES_MESES = (
@@ -151,6 +158,54 @@ def obtener_horarios():
         db.session.rollback()
         logger.exception("Error consultando horarios de Sanación Alternativa (usuario %s).", ID_USUARIO_STAFF)
         return [], True
+
+
+def _url_imagen_publicidad(imagen):
+    """URL absoluta de la imagen de un anuncio (viene de CitaNet)."""
+    imagen = (imagen or "").strip()
+    if imagen.startswith(("http://", "https://")):
+        return imagen
+    imagen = imagen.lstrip("/")
+    if imagen.startswith("static/"):
+        imagen = imagen[len("static/"):]
+    return PUBLICIDAD_IMG_BASE + imagen
+
+
+def obtener_publicidad():
+    """
+    Anuncios vigentes que CitaNet muestra en su página: activos, validados por CitaNet,
+    dentro de su vigencia y, o son de la empresa 1 (sin cargo), o su cargo ya está pagado
+    (movCuenta ligado con saldo <= 0). Devuelve [] si algo falla para no tumbar el sitio.
+    """
+    try:
+        hoy = ahora_local().date()
+        filas = (
+            db.session.query(Publicidad.idPublicidad, Publicidad.imagen,
+                             Publicidad.descripcion, Publicidad.urlPublicidad)
+            .outerjoin(movCuenta, Publicidad.idMovimiento == movCuenta.idMovimiento)
+            .filter(
+                Publicidad.activo.is_(True),
+                Publicidad.valido_por_citanet.is_(True),
+                or_(Publicidad.fechaInicioVigencia.is_(None), Publicidad.fechaInicioVigencia <= hoy),
+                or_(Publicidad.fechaFinVigencia.is_(None), Publicidad.fechaFinVigencia >= hoy),
+                or_(Publicidad.idEmpresa == ID_EMPRESA_CITANET, movCuenta.saldo <= 0),
+            )
+            .order_by(Publicidad.idPublicidad.desc())
+            .limit(PUBLICIDAD_MAX)
+            .all()
+        )
+        return [
+            {
+                "imagen": _url_imagen_publicidad(f.imagen),
+                "descripcion": f.descripcion or "",
+                "url": f.urlPublicidad or "",
+            }
+            for f in filas if f.imagen
+        ]
+    except Exception:
+        db.session.rollback()
+        logger.exception("Error consultando la publicidad.")
+        return []
 
 
 # ----------------------------------------
@@ -365,6 +420,7 @@ def index():
         horarios_por_dia=horarios_por_dia,
         error_horarios=error_horarios,
         paises=paises,
+        publicidad=obtener_publicidad(),
     )
 
 
