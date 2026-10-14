@@ -79,6 +79,35 @@
         .pub-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 50%; background: rgba(6, 95, 70, .28); cursor: pointer; transition: .2s; }
         .pub-dot.activo { background: #065f46; transform: scale(1.35); }
         @media (prefers-reduced-motion: reduce) { .pub-track { transition: none; } }
+
+        /* ===== Carrusel vertical de reseñas (varias a la vez, desplazamiento continuo) ===== */
+        .rs-vp { position: relative; overflow: hidden; height: 360px;
+                 -webkit-mask-image: linear-gradient(transparent, #000 6%, #000 94%, transparent);
+                 mask-image: linear-gradient(transparent, #000 6%, #000 94%, transparent); }
+        @media (min-width: 1280px) { .rs-vp { height: 480px; } }
+        .rs-vp.anima .rs-lista { animation: rs-sube var(--dur, 40s) linear infinite; }
+        .rs-vp.anima:hover .rs-lista, .rs-vp.pausa .rs-lista { animation-play-state: paused; }
+        @keyframes rs-sube { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .rs-vp { overflow-y: auto; } .rs-vp.anima .rs-lista { animation: none; } }
+        .rs-card { margin: 0 2px 12px; padding: 14px 16px; border: 1px solid #e7e5e4; border-radius: 16px;
+                   background: rgba(255, 255, 255, .85); box-shadow: 0 2px 8px rgba(41, 37, 36, .05); }
+        .rs-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .rs-stars { color: #d4a017; letter-spacing: 2px; font-size: .95rem; }
+        .rs-stars .rs-off { color: #d6d3d1; }
+        .rs-fecha { font-size: .7rem; color: #a8a29e; white-space: nowrap; }
+        .rs-texto { margin-top: 8px; font-size: .85rem; line-height: 1.5; color: #57534e; white-space: pre-line; overflow-wrap: anywhere; }
+        .rs-autor { margin-top: 8px; font-size: .78rem; font-weight: 600; color: #065f46; }
+        .rs-vacio { padding: 22px 16px; text-align: center; font-size: .85rem; color: #78716c; border: 1px dashed #d6d3d1; border-radius: 16px; background: rgba(255, 255, 255, .6); }
+
+        /* Cuadro para agregar reseña */
+        .dlg textarea { display: block; width: 100%; padding: 12px 14px; margin-bottom: 6px; border: 1px solid #d6d3d1; border-radius: 12px;
+                        background: #fff; font: inherit; font-size: 1rem; color: #292524; text-align: left; resize: vertical; min-height: 110px; }
+        .dlg textarea:focus { outline: 0; border-color: #065f46; box-shadow: 0 0 0 3px rgba(6, 95, 70, .18); }
+        .rv-estrellas { display: flex; justify-content: center; gap: 4px; margin-bottom: 16px; }
+        .rv-star { background: none; border: 0; padding: 0 2px; font-size: 2.1rem; line-height: 1; color: #d6d3d1; cursor: pointer; transition: transform .15s, color .15s; }
+        .rv-star:hover { transform: scale(1.15); }
+        .rv-star.on { color: #d4a017; }
+        .rv-contador { text-align: right; font-size: .75rem; color: #a8a29e; margin-bottom: 16px; }
     </style>
 </head>
 <body class="bg-[#fffcf0] text-stone-800 antialiased">
@@ -119,10 +148,12 @@
         </div>
     </header>
 
-    <section id="horarios" class="py-20 px-6 max-w-7xl mx-auto">
-      <div class="{% if publicidad %}flex flex-col xl:grid xl:grid-cols-[230px_minmax(0,1fr)] xl:gap-x-10 xl:items-start{% endif %}">
+    {% set col_centro = 'xl:col-start-2' if publicidad else 'xl:col-start-1' %}
+    {% set col_resenas = 'xl:col-start-3' if publicidad else 'xl:col-start-2' %}
+    <section id="horarios" class="py-20 px-6 max-w-[1500px] mx-auto">
+      <div class="flex flex-col xl:grid xl:gap-x-8 xl:items-start {{ 'xl:grid-cols-[230px_minmax(0,1fr)_280px]' if publicidad else 'xl:grid-cols-[minmax(0,1fr)_280px]' }}">
 
-        <div class="text-center mb-10 min-w-0 xl:col-start-2 xl:row-start-1">
+        <div class="text-center mb-10 min-w-0 {{ col_centro }} xl:row-start-1">
             <span class="text-emerald-800 font-bold tracking-[0.2em] uppercase text-xs">Agenda abierta</span>
             <h2 class="font-serif text-4xl text-stone-900 mt-2 mb-3">Horarios disponibles</h2>
             <p class="text-sm text-stone-500 max-w-xl mx-auto font-light">
@@ -151,13 +182,13 @@
         </aside>
         {% endif %}
 
-        <div class="min-w-0 xl:col-start-2 xl:row-start-2">
+        <div class="min-w-0 {{ col_centro }} xl:row-start-2">
         {% if error_horarios %}
             <p class="max-w-2xl mx-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-900" role="status">
                 En este momento no podemos consultar la agenda. Intenta más tarde o agenda directamente en CitaNet.
             </p>
         {% elif horarios_por_dia %}
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 min-[1700px]:grid-cols-3">
                 {% for dia in horarios_por_dia %}
                     <article class="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-sm">
                         <h3 class="font-serif text-2xl text-stone-800">{{ dia.titulo }}</h3>
@@ -181,6 +212,28 @@
             </p>
         {% endif %}
         </div>
+
+        <aside class="order-last xl:order-none w-full max-w-xs mx-auto mt-12 xl:mt-0 xl:max-w-none xl:sticky xl:top-28 {{ col_resenas }} xl:row-start-2" aria-label="Reseñas">
+            {% if resenas %}
+            <div class="rs-vp" id="rsCarrusel">
+                <div class="rs-lista" id="rsLista">
+                    {% for r in resenas %}
+                        <article class="rs-card">
+                            <div class="rs-top">
+                                <span class="rs-stars" role="img" aria-label="{{ r.estrellas }} de 5 estrellas">{{ '★' * r.estrellas }}<span class="rs-off">{{ '★' * (5 - r.estrellas) }}</span></span>
+                                <span class="rs-fecha">{{ r.fecha }}</span>
+                            </div>
+                            <p class="rs-texto">{{ r.comentario }}</p>
+                            <p class="rs-autor">{{ r.autor }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <p class="rs-vacio">Aún no hay reseñas. ¡Sé la primera persona en opinar!</p>
+            {% endif %}
+            <button type="button" id="abrirResena" class="mt-4 block w-full rounded-full border border-emerald-800 px-5 py-2.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-800 hover:text-white">Agregar reseña</button>
+        </aside>
       </div>
     </section>
 
@@ -389,6 +442,156 @@
 })();
 </script>
 {% endif %}
+
+<dialog id="dlgResena" class="dlg">
+    <div class="dlg-caja">
+        <button type="button" class="dlg-x" id="rvX" aria-label="Cerrar">&times;</button>
+        <h2 id="rvTitulo">Agregar reseña</h2>
+        <div class="dlg-orn">✦</div>
+        <p class="dlg-sub" id="rvSub">Cuéntanos cómo fue tu experiencia.</p>
+
+        <div id="rvForm">
+            <label>¿Cómo calificas tu experiencia?</label>
+            <div class="rv-estrellas" id="rvEstrellas" role="radiogroup" aria-label="Calificación">
+                {% for n in range(1, 6) %}<button type="button" class="rv-star" data-n="{{ n }}" role="radio" aria-checked="false" aria-label="{{ n }} de 5 estrellas">★</button>{% endfor %}
+            </div>
+
+            {% if cliente %}
+                <p class="dlg-sub" style="margin-top:-4px">Publicarás como <strong>{{ cliente.nombre }}</strong>.</p>
+            {% else %}
+                <label for="rvNombre">Tu nombre (opcional)</label>
+                <input type="text" id="rvNombre" maxlength="80" autocomplete="name" placeholder="Vacío para publicar como anónimo">
+            {% endif %}
+
+            <label for="rvComentario">Tu comentario</label>
+            <textarea id="rvComentario" maxlength="500" rows="4" placeholder="Escribe aquí tu reseña"></textarea>
+            <div class="rv-contador" id="rvContador">0/500</div>
+
+            <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+                <input type="text" id="rvWeb" tabindex="-1" autocomplete="off">
+            </div>
+
+            <button type="button" class="dlg-btn" id="rvEnviar">Publicar reseña</button>
+        </div>
+
+        <p id="rvMsg" class="dlg-msg" hidden></p>
+        <button type="button" class="dlg-btn" id="rvListo" hidden style="margin-top:18px">Listo</button>
+    </div>
+</dialog>
+
+<script>
+/* Reseñas: carrusel vertical continuo (se ven varias a la vez) y cuadro para agregar una. */
+(function () {
+    const $ = id => document.getElementById(id);
+
+    // ---------- Carrusel ----------
+    const vp = $("rsCarrusel"), lista = $("rsLista");
+    if (vp && lista) {
+        const VELOCIDAD = 28;   // píxeles por segundo
+        let timer = null;
+
+        function ajustar() {
+            lista.querySelectorAll("[data-clon]").forEach(e => e.remove());
+            vp.classList.remove("anima");
+            if (lista.scrollHeight <= vp.clientHeight + 4) return;     // caben todas: se quedan quietas
+            [...lista.children].forEach(c => {
+                const copia = c.cloneNode(true);
+                copia.setAttribute("data-clon", "1");
+                copia.setAttribute("aria-hidden", "true");
+                lista.appendChild(copia);
+            });
+            const mitad = lista.scrollHeight / 2;
+            vp.style.setProperty("--dur", Math.max(12, mitad / VELOCIDAD) + "s");
+            vp.classList.add("anima");
+        }
+
+        ajustar();
+        window.addEventListener("resize", () => { clearTimeout(timer); timer = setTimeout(ajustar, 200); });
+        // En celular no hay "hover": al tocar el carrusel se pausa y al soltar continúa
+        vp.addEventListener("touchstart", () => vp.classList.add("pausa"), {passive: true});
+        vp.addEventListener("touchend", () => setTimeout(() => vp.classList.remove("pausa"), 1500), {passive: true});
+    }
+
+    // ---------- Agregar reseña ----------
+    const dlg = $("dlgResena");
+    const URL_RESENA = "{{ url_for('resenas_agregar') }}";
+    const estrellas = [...document.querySelectorAll("#rvEstrellas .rv-star")];
+    let valor = 0, enviada = false;
+
+    function pintar(n) {
+        estrellas.forEach((s, i) => { s.classList.toggle("on", i < n); s.setAttribute("aria-checked", i + 1 === valor ? "true" : "false"); });
+    }
+    function mensaje(txt, error) {
+        const m = $("rvMsg");
+        m.hidden = false;
+        m.textContent = txt;
+        m.className = "dlg-msg " + (error ? "es-error" : "es-ok");
+    }
+
+    $("abrirResena").addEventListener("click", () => {
+        valor = 0;
+        pintar(0);
+        $("rvComentario").value = "";
+        $("rvContador").textContent = "0/500";
+        const nom = $("rvNombre"); if (nom) nom.value = "";
+        $("rvTitulo").textContent = "Agregar reseña";
+        $("rvSub").textContent = "Cuéntanos cómo fue tu experiencia.";
+        $("rvForm").hidden = false;
+        $("rvEnviar").disabled = false;
+        $("rvMsg").hidden = true;
+        $("rvListo").hidden = true;
+        dlg.showModal();
+    });
+
+    estrellas.forEach(s => {
+        s.addEventListener("click", () => { valor = parseInt(s.dataset.n, 10); pintar(valor); });
+        s.addEventListener("mouseenter", () => pintar(parseInt(s.dataset.n, 10)));
+        s.addEventListener("mouseleave", () => pintar(valor));
+    });
+
+    $("rvComentario").addEventListener("input", function () { $("rvContador").textContent = this.value.length + "/500"; });
+    $("rvX").addEventListener("click", () => dlg.close());
+    dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+    $("rvListo").addEventListener("click", () => dlg.close());
+    dlg.addEventListener("close", () => { if (enviada) location.reload(); });   // se recarga para mostrar la reseña nueva
+
+    $("rvEnviar").addEventListener("click", async () => {
+        const comentario = $("rvComentario").value.trim();
+        if (!valor) { mensaje("Elige una calificación de 1 a 5 estrellas.", true); return; }
+        if (comentario.length < 3) { mensaje("Escribe tu comentario.", true); return; }
+
+        $("rvEnviar").disabled = true;
+        $("rvMsg").hidden = true;
+        let data = {};
+        try {
+            const r = await fetch(URL_RESENA, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    estrellas: valor,
+                    comentario: comentario,
+                    nombre: $("rvNombre") ? $("rvNombre").value.trim() : "",
+                    web: $("rvWeb").value
+                })
+            });
+            try { data = await r.json(); } catch (e) {}
+        } catch (e) {
+            data = {ok: false, error: "No pudimos enviar tu reseña. Intenta de nuevo."};
+        }
+
+        if (data.ok) {
+            enviada = true;
+            $("rvForm").hidden = true;
+            $("rvTitulo").textContent = "¡Gracias!";
+            $("rvSub").textContent = "Tu reseña ya fue publicada.";
+            $("rvListo").hidden = false;     // al cerrar se recarga para mostrarla
+        } else {
+            $("rvEnviar").disabled = false;
+            mensaje(data.error || "No pudimos enviar tu reseña.", true);
+        }
+    });
+})();
+</script>
 
 <script>
 /* Reservar: si hay sesión se confirma y se reserva; si no, se pide el acceso y se continúa al volver. */

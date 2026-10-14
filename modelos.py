@@ -1,7 +1,7 @@
 import uuid
 
 from flask_sqlalchemy   import SQLAlchemy
-from sqlalchemy         import UniqueConstraint, func
+from sqlalchemy         import UniqueConstraint, CheckConstraint, func
 from datetime           import date, datetime, timedelta
 
 db = SQLAlchemy()
@@ -747,7 +747,43 @@ class Publicidad(db.Model):
     empresa     = db.relationship('Empresa', backref='publicidad')
     movCuenta   = db.relationship("movCuenta", backref="publicidad")
     compra      = db.relationship("CompraPublicidad", backref="publicidad")
- 
+
+
+class Resena(db.Model):
+    """
+    Reseña/comentario público de una empresa.
+      - idUsuario: especialista al que va dirigida (NULL = es para la empresa en general).
+      - idCliente: quien la escribió (NULL = no había iniciado sesión).
+      - nombreAutor: nombre que dio quien NO inició sesión (NULL = anónimo). Si hay idCliente
+        se muestra el nombre del cliente y este campo queda NULL.
+      - estrellas: calificación de 1 a 5 (1 = no me gustó, 5 = me encantó).
+      - visible: permite ocultar una reseña sin borrarla (moderación).
+    """
+    __tablename__ = "resena"
+
+    idResena    = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idEmpresa   = db.Column(db.Integer, db.ForeignKey("empresa.idEmpresa"), nullable=False)
+    idUsuario   = db.Column(db.Integer, db.ForeignKey("usuario.idUsuario"), nullable=True)
+    idCliente   = db.Column(db.Integer, db.ForeignKey("cliente.idCliente"), nullable=True)
+    nombreAutor = db.Column(db.String(80), nullable=True)
+    fecha       = db.Column(db.Date, nullable=False, default=date.today)
+    hora        = db.Column(db.Time, nullable=False, default=lambda: datetime.now().time())
+    comentario  = db.Column(db.String(500), nullable=False)
+    estrellas   = db.Column(db.SmallInteger, nullable=False)
+    visible     = db.Column(db.Boolean, nullable=False, default=True)
+
+    empresa = db.relationship("Empresa", backref=db.backref("resenas", lazy=True))
+    usuario = db.relationship("Usuario", backref=db.backref("resenas", lazy=True))
+    cliente = db.relationship("Cliente", backref=db.backref("resenas", lazy=True))
+
+    __table_args__ = (
+        CheckConstraint("estrellas BETWEEN 1 AND 5", name="chk_resena_estrellas"),
+    )
+
+    def __repr__(self):
+        return f'<Resena {self.idResena} empresa={self.idEmpresa} estrellas={self.estrellas}>'
+
+
 class CodigoTelefono(db.Model):
     __tablename__ = "codigos_telefono"
     telefono = db.Column(db.String(20), primary_key=True)

@@ -15,6 +15,7 @@ Requiere en la misma carpeta:
 """
 import logging
 import re
+import time
 from datetime import datetime, timedelta
 from html import unescape
 from zoneinfo import ZoneInfo
@@ -24,7 +25,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from sqlalchemy import and_, or_
 
 import config
-from modelos import db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais, Publicidad, movCuenta
+from modelos import db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais, Publicidad, movCuenta, Resena
 
 # ----------------------------------------
 # AJUSTES DEL SITIO
@@ -44,6 +45,14 @@ CITANET_INTERNAL_URL = getattr(config, "CITANET_INTERNAL_URL", "http://127.0.0.1
 PUBLICIDAD_IMG_BASE = getattr(config, "PUBLICIDAD_IMG_BASE", "https://www.citanet.com.mx/static/")
 PUBLICIDAD_MAX      = 20                  # Máximo de anuncios en el carrusel
 ID_EMPRESA_CITANET  = 1                   # Empresa maestra: sus anuncios no requieren pago
+
+# Reseñas: empresa a la que se guardan y se leen las reseñas de este sitio.
+ID_EMPRESA_RESENAS = 2                    # Empresa de CitaNet dueña de las reseñas
+ID_USUARIO_RESENA  = None                 # Especialista al que van dirigidas (None = a la empresa en general)
+RESENAS_MAX        = 30                   # Máximo de reseñas en el carrusel
+RESENA_MIN_CARS    = 3                    # Mínimo y máximo de caracteres del comentario
+RESENA_MAX_CARS    = 500
+RESENA_ESPERA_SEG  = 60                   # Segundos mínimos entre una reseña y otra del mismo visitante
 
 NOMBRES_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
 NOMBRES_MESES = (
@@ -205,6 +214,43 @@ def obtener_publicidad():
     except Exception:
         db.session.rollback()
         logger.exception("Error consultando la publicidad.")
+        return []
+
+
+def _nombre_publico(nombre):
+    """'María Fernanda López Ruiz' -> 'María L.' (primer nombre y la inicial del último apellido)."""
+    partes = (nombre or "").split()
+    if not partes:
+        return "Anónimo"
+    if len(partes) == 1:
+        return partes[0]
+    return f"{partes[0]} {partes[-1][0].upper()}."
+
+
+def obtener_resenas():
+    """Reseñas visibles de la empresa de reseñas, de la más nueva a la más antigua."""
+    try:
+        filas = (
+            db.session.query(Resena.estrellas, Resena.comentario, Resena.fecha,
+                             Resena.nombreAutor, Cliente.nombreCliente)
+            .outerjoin(Cliente, Resena.idCliente == Cliente.idCliente)
+            .filter(Resena.idEmpresa == ID_EMPRESA_RESENAS, Resena.visible.is_(True))
+            .order_by(Resena.fecha.desc(), Resena.hora.desc(), Resena.idResena.desc())
+            .limit(RESENAS_MAX)
+            .all()
+        )
+        return [
+            {
+                "estrellas": max(1, min(5, int(f.estrellas or 0))),
+                "comentario": f.comentario or "",
+                "autor": _nombre_publico(f.nombreCliente or f.nombreAutor),
+                "fecha": f"{f.fecha.day} {NOMBRES_MESES[f.fecha.month - 1][:3]} {f.fecha.year}",
+            }
+            for f in filas
+        ]
+    except Exception:
+        db.session.rollback()
+        logger.exception("Error consultando las reseñas.")
         return []
 
 
@@ -387,6 +433,58 @@ def acceso_reservar():
     return jsonify(ok=False, error=m.group(1) if m else "No pudimos reservar este horario."), 409
 
 
+@app.post("/resenas/agregar")
+def resenas_agregar():
+    """Guarda una reseña. Con sesión se liga al cliente; sin sesión se guarda el nombre dado (o anónimo)."""
+    d = request.get_json(silent=True) or {}
+
+    if str(d.get("web", "")).strip():          # campo trampa para bots: se finge éxito y no se guarda
+        return jsonify(ok=True)
+
+    try:
+        estrellas = int(d.get("estrellas"))
+    except (TypeError, ValueError):
+        estrellas = 0
+    if not 1 <= estrellas <= 5:
+        return jsonify(ok=False, error="Elige una calificación de 1 a 5 estrellas."), 400
+
+    comentario = str(d.get("comentario", "")).strip()
+    if len(comentario) < RESENA_MIN_CARS:
+        return jsonify(ok=False, error="Escribe tu comentario."), 400
+    if len(comentario) > RESENA_MAX_CARS:
+        return jsonify(ok=False, error=f"El comentario no puede pasar de {RESENA_MAX_CARS} caracteres."), 400
+
+    ahora_seg = time.time()
+    if ahora_seg - float(session.get("ult_resena", 0) or 0) < RESENA_ESPERA_SEG:
+        return jsonify(ok=False, error="Espera un momento antes de enviar otra reseña."), 429
+
+    cl = session.get("cliente")
+    id_cliente = cl["id"] if cl else None
+    nombre = None if cl else (str(d.get("nombre", "")).strip()[:80] or None)
+
+    ahora = ahora_local()
+    try:
+        db.session.add(Resena(
+            idEmpresa=ID_EMPRESA_RESENAS,
+            idUsuario=ID_USUARIO_RESENA,
+            idCliente=id_cliente,
+            nombreAutor=nombre,
+            fecha=ahora.date(),
+            hora=ahora.time().replace(microsecond=0),
+            comentario=comentario,
+            estrellas=estrellas,
+            visible=True,
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception("No se pudo guardar la reseña.")
+        return jsonify(ok=False, error="No pudimos guardar tu reseña. Intenta de nuevo."), 500
+
+    session["ult_resena"] = ahora_seg
+    return jsonify(ok=True)
+
+
 @app.post("/salir")
 def salir():
     session.clear()
@@ -421,6 +519,7 @@ def index():
         error_horarios=error_horarios,
         paises=paises,
         publicidad=obtener_publicidad(),
+        resenas=obtener_resenas(),
     )
 
 
