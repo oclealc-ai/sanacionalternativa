@@ -1,7 +1,7 @@
 """
 Sanación Alternativa - sitio público conectado a la base de datos de CitaNet.
 
-Sirve el index.html con los horarios disponibles de la agenda.
+Sirve el index.html con los horarios disponibles de la agenda, filtrables por especialista y servicio.
 El cliente inicia sesión (o se registra) con el mismo flujo de CitaNet y reserva
 llamando a la ruta de reserva de CitaNet (/cliente/reservar_cita), por eso aquí
 NO se registran los blueprints de routes/.
@@ -10,7 +10,7 @@ Requiere en la misma carpeta:
   - config.py            (con SQLALCHEMY_DATABASE_URI apuntando a la BD de CitaNet
                           y SECRET_KEY propio de este sitio)
   - modelos.py           (el de CitaNet, el vigente)
-  - templates/index.html
+  - templates/index.html y templates/_horarios.html
   - static/img/...       (imagen01.jpeg a imagen04.jpeg)
 """
 import logging
@@ -25,13 +25,14 @@ from flask import Flask, render_template, request, session, redirect, url_for, j
 from sqlalchemy import and_, or_
 
 import config
-from modelos import db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais, Publicidad, movCuenta, Resena
+from modelos import (db, Empresa, Cita, EstatusCita, Cliente, ClienteEmpresa, CitaCliente, Pais, Publicidad,
+                     movCuenta, Resena, Usuario, Producto, ProductoUsuario)
 
 # ----------------------------------------
 # AJUSTES DEL SITIO
 # ----------------------------------------
 SLUG_EMPRESA     = "ac3785dd"             # Empresa "Sanación Alternativa" en CitaNet
-ID_USUARIO_STAFF = 4                      # Staff cuya agenda se muestra
+# Los horarios se filtran por especialista desde la página (usuarios tipo 'staff' de la empresa).
 DIAS_ADELANTE    = 14                     # Cuántos días hacia adelante se consultan
 ZONA_HORARIA     = "America/Mexico_City"  # Las citas se guardan en hora local
 
@@ -96,13 +97,17 @@ def ahora_local():
         return datetime.now()
 
 
-def agrupar_horarios(citas, ahora):
-    """Agrupa [(idCita, fecha, hora), ...] por día con el formato que espera index.html."""
+def agrupar_horarios(citas, ahora, etiquetas=None):
+    """
+    Agrupa [(idCita, fecha, hora, idUsuario), ...] por día con el formato que espera index.html.
+    `etiquetas` es {idUsuario: nombre}; si se manda, cada horario lleva el nombre del especialista.
+    """
     hoy = ahora.date()
     manana = hoy + timedelta(days=1)
     grupos = {}
+    etiquetas = etiquetas or {}
 
-    for id_cita, fecha, hora in citas:
+    for id_cita, fecha, hora, id_usuario in citas:
         if fecha not in grupos:
             if fecha == hoy:
                 titulo = "Hoy"
@@ -116,21 +121,107 @@ def agrupar_horarios(citas, ahora):
                 "fecha_larga": f"{NOMBRES_DIAS[fecha.weekday()]}, {fecha.day} de {NOMBRES_MESES[fecha.month - 1]}",
                 "horarios": [],
             }
-        grupos[fecha]["horarios"].append({"idCita": id_cita, "hora": hora.strftime("%H:%M")})
+        grupos[fecha]["horarios"].append({
+            "idCita": id_cita,
+            "hora": hora.strftime("%H:%M"),
+            "especialista": etiquetas.get(id_usuario),
+        })
 
     return list(grupos.values())
 
 
-def obtener_horarios():
+def obtener_filtros(id_empresa):
+    """
+    Datos de los filtros de la página:
+      - especialistas: [{"id", "nombre"}] solo usuarios tipo 'staff' de la empresa.
+      - servicios: {idUsuario: [{"id", "nombre", "minutos"}]} según producto_usuario
+        (solo productos tipo 'servicio' y activos de la empresa).
+    """
+    especialistas, servicios = [], {}
+    try:
+        staff = (
+            db.session.query(Usuario.idUsuario, Usuario.nombreUsuario, Usuario.alias, Usuario.usuario)
+            .filter(Usuario.idEmpresa == id_empresa, Usuario.tipoUsuario == "staff")
+            .all()
+        )
+        especialistas = sorted(
+            ({"id": u.idUsuario, "nombre": (u.nombreUsuario or u.alias or u.usuario or "").strip()} for u in staff),
+            key=lambda e: e["nombre"].lower(),
+        )
+        if especialistas:
+            filas = (
+                db.session.query(ProductoUsuario.idUsuario, Producto.idProducto, Producto.nombre, Producto.tiempoEstimado)
+                .join(Producto, Producto.idProducto == ProductoUsuario.idProducto)
+                .filter(
+                    ProductoUsuario.idUsuario.in_([e["id"] for e in especialistas]),
+                    Producto.idEmpresa == id_empresa,
+                    Producto.tipo == "servicio",
+                    Producto.activo == True,  # noqa: E712
+                )
+                .order_by(Producto.nombre)
+                .all()
+            )
+            for f in filas:
+                servicios.setdefault(f.idUsuario, []).append(
+                    {"id": f.idProducto, "nombre": f.nombre, "minutos": f.tiempoEstimado or 0}
+                )
+    except Exception:
+        db.session.rollback()
+        logger.exception("Error consultando especialistas y servicios para los filtros.")
+        return [], {}
+    return especialistas, servicios
+
+
+def _filtrar_por_servicio(citas, servicio):
+    """
+    Deja solo los horarios en los que se puede tomar `servicio`:
+      - Cita con servicio fijo (clase): debe ser ese mismo servicio.
+      - Cita individual: si el servicio dura más que un espacio, hacen falta los espacios
+        siguientes del mismo especialista, seguidos y también disponibles (como lo hace CitaNet
+        con idCitaMaestra).
+    """
+    minutos = servicio["minutos"] or 0
+    por_hora = {(c.idUsuario, c.fechaCita, c.horaCita): c for c in citas}
+    resultado = []
+
+    for c in citas:
+        if c.idProducto is not None:
+            if c.idProducto == servicio["id"]:
+                resultado.append(c)
+            continue
+
+        duracion = c.duracion or 0
+        if (c.cupoMaximo or 1) > 1 or duracion <= 0 or minutos <= duracion:
+            resultado.append(c)
+            continue
+
+        cubierto, actual, ok = duracion, c, True
+        while cubierto < minutos:
+            siguiente_hora = (datetime.combine(actual.fechaCita, actual.horaCita)
+                              + timedelta(minutes=actual.duracion)).time()
+            sig = por_hora.get((c.idUsuario, c.fechaCita, siguiente_hora))
+            if sig is None or sig.idProducto is not None or (sig.cupoMaximo or 1) > 1 or not sig.duracion:
+                ok = False
+                break
+            cubierto += sig.duracion
+            actual = sig
+        if ok:
+            resultado.append(c)
+
+    return resultado
+
+
+def obtener_horarios(id_usuario=None, id_producto=None, filtros=None):
     """
     Devuelve (horarios_por_dia, error_horarios).
-    Un horario disponible es una cita en estatus 'Disponible' del staff indicado,
+    Un horario disponible es una cita en estatus 'Disponible' de un especialista (staff) de la empresa,
     con lugar libre, dentro de los próximos DIAS_ADELANTE días y que no haya pasado.
+      - id_usuario: solo ese especialista (None = todos los especialistas).
+      - id_producto: solo horarios donde ese especialista puede dar ese servicio (requiere id_usuario).
+      - filtros: resultado de obtener_filtros() si ya se consultó (evita repetir consultas).
     """
     try:
-        # Se piden solo las columnas necesarias (no el objeto completo) para que el sitio
-        # no dependa de columnas que no se usan aquí.
-        id_empresa = db.session.query(Empresa.idEmpresa).filter(Empresa.slug == SLUG_EMPRESA).scalar()
+        id_empresa = id_empresa_sitio()
         if id_empresa is None:
             logger.error("No se encontró la empresa con slug %s.", SLUG_EMPRESA)
             return [], True
@@ -140,14 +231,32 @@ def obtener_horarios():
             logger.error("No se encontró el estatus 'Disponible' para consultar horarios.")
             return [], True
 
+        especialistas, servicios = filtros if filtros is not None else obtener_filtros(id_empresa)
+        nombres = {e["id"]: e["nombre"] for e in especialistas}
+        if not nombres:
+            return [], False
+
+        # Los filtros se validan contra lo que existe: un valor inválido se ignora
+        if id_usuario not in nombres:
+            id_usuario = None
+        servicio = None
+        if id_usuario and id_producto:
+            servicio = next((x for x in servicios.get(id_usuario, []) if x["id"] == id_producto), None)
+
+        ids = [id_usuario] if id_usuario else list(nombres)
         ahora = ahora_local()
         hoy = ahora.date()
 
+        # Se piden solo las columnas necesarias (no el objeto completo) para que el sitio
+        # no dependa de columnas que no se usan aquí.
         citas = (
-            db.session.query(Cita.idCita, Cita.fechaCita, Cita.horaCita)
+            db.session.query(
+                Cita.idCita, Cita.idUsuario, Cita.fechaCita, Cita.horaCita,
+                Cita.duracion, Cita.cupoMaximo, Cita.idProducto,
+            )
             .filter(
                 Cita.idEmpresa == id_empresa,
-                Cita.idUsuario == ID_USUARIO_STAFF,
+                Cita.idUsuario.in_(ids),
                 Cita.idEstatus == id_disponible,
                 Cita.cupoOcupado < Cita.cupoMaximo,   # todavía hay lugar
                 Cita.idCitaMaestra.is_(None),         # no es continuación de otra reserva
@@ -158,14 +267,20 @@ def obtener_horarios():
                     and_(Cita.fechaCita == hoy, Cita.horaCita >= ahora.time()),
                 ),
             )
-            .order_by(Cita.fechaCita, Cita.horaCita)
+            .order_by(Cita.fechaCita, Cita.horaCita, Cita.idUsuario)
             .all()
         )
-        return agrupar_horarios(citas, ahora), False
+        if servicio:
+            citas = _filtrar_por_servicio(citas, servicio)
+
+        # Con varios especialistas y sin filtrar por uno, cada horario muestra de quién es
+        etiquetas = nombres if (not id_usuario and len(nombres) > 1) else None
+        filas = [(c.idCita, c.fechaCita, c.horaCita, c.idUsuario) for c in citas]
+        return agrupar_horarios(filas, ahora, etiquetas), False
 
     except Exception:
         db.session.rollback()
-        logger.exception("Error consultando horarios de Sanación Alternativa (usuario %s).", ID_USUARIO_STAFF)
+        logger.exception("Error consultando horarios de Sanación Alternativa.")
         return [], True
 
 
@@ -505,7 +620,9 @@ def page_not_found(e):
 @app.route("/")
 @app.route("/index")
 def index():
-    horarios_por_dia, error_horarios = obtener_horarios()
+    filtros = obtener_filtros(id_empresa_sitio())
+    especialistas, servicios = filtros
+    horarios_por_dia, error_horarios = obtener_horarios(filtros=filtros)
     paises = []
     if not session.get("cliente"):
         try:   # lista de países para el alta (la misma que usa CitaNet)
@@ -517,10 +634,27 @@ def index():
         "index.html",
         horarios_por_dia=horarios_por_dia,
         error_horarios=error_horarios,
+        especialistas=especialistas,
+        servicios_por_especialista=servicios,
         paises=paises,
         publicidad=obtener_publicidad(),
         resenas=obtener_resenas(),
     )
+
+
+@app.get("/horarios")
+def horarios_filtrados():
+    """Horarios filtrados por especialista y servicio; devuelve el HTML de la lista de días."""
+    id_usuario = request.args.get("usuario", type=int)
+    id_producto = request.args.get("producto", type=int)
+    horarios_por_dia, error_horarios = obtener_horarios(id_usuario, id_producto)
+    html = render_template(
+        "_horarios.html",
+        horarios_por_dia=horarios_por_dia,
+        error_horarios=error_horarios,
+        filtro_activo=bool(id_usuario),
+    )
+    return jsonify(html=html)
 
 
 if __name__ == "__main__":

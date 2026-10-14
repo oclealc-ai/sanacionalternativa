@@ -160,6 +160,24 @@
                 Consulta los espacios disponibles para las próximas dos semanas. Elige un horario para reservar tu sesión.
             </p>
             <div class="w-12 h-0.5 bg-emerald-800 mx-auto mt-4"></div>
+
+            {% if especialistas %}
+            <div id="filtrosHorarios" class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-end justify-center gap-4 text-left">
+                <div class="w-full sm:w-64">
+                    <label for="fltEspecialista" class="block text-xs font-semibold tracking-wide text-stone-600 mb-1.5">Especialista</label>
+                    <select id="fltEspecialista" class="w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-emerald-800 focus:ring-2 focus:ring-emerald-700/20">
+                        <option value="">Todos los especialistas</option>
+                        {% for e in especialistas %}<option value="{{ e.id }}">{{ e.nombre }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div id="fltServicioGrupo" class="w-full sm:w-64" hidden>
+                    <label for="fltServicio" class="block text-xs font-semibold tracking-wide text-stone-600 mb-1.5">Servicios del especialista</label>
+                    <select id="fltServicio" class="w-full rounded-full border border-stone-300 bg-white px-4 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-emerald-800 focus:ring-2 focus:ring-emerald-700/20">
+                        <option value="">Todos los servicios</option>
+                    </select>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         {% if publicidad %}
@@ -183,34 +201,7 @@
         {% endif %}
 
         <div class="min-w-0 {{ col_centro }} xl:row-start-2">
-        {% if error_horarios %}
-            <p class="max-w-2xl mx-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-900" role="status">
-                En este momento no podemos consultar la agenda. Intenta más tarde o agenda directamente en CitaNet.
-            </p>
-        {% elif horarios_por_dia %}
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 min-[1700px]:grid-cols-3">
-                {% for dia in horarios_por_dia %}
-                    <article class="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-sm">
-                        <h3 class="font-serif text-2xl text-stone-800">{{ dia.titulo }}</h3>
-                        <p class="mt-1 text-xs capitalize text-stone-500">{{ dia.fecha_larga }}</p>
-                        <div class="mt-5 flex flex-wrap gap-2">
-                            {% for horario in dia.horarios %}
-                                <button type="button" data-id-cita="{{ horario.idCita }}" data-texto="{{ dia.fecha_larga }} a las {{ horario.hora }}"
-                                        title="Reservar el {{ dia.fecha_larga }} a las {{ horario.hora }}"
-                                        class="slot-horario inline-flex min-h-10 items-center justify-center rounded-full border border-emerald-800/20 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800 hover:bg-emerald-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 cursor-pointer">{{ horario.hora }}</button>
-                            {% endfor %}
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-            <p class="mt-6 text-center text-xs text-stone-500">
-                Elige un horario: si aún no has iniciado sesión te pediremos tu teléfono, y después solo confirmas tu reserva.
-            </p>
-        {% else %}
-            <p class="max-w-2xl mx-auto rounded-xl border border-stone-200 bg-white/70 px-5 py-4 text-center text-sm text-stone-600">
-                No hay horarios disponibles en las próximas dos semanas. Puedes consultar de nuevo más tarde.
-            </p>
-        {% endif %}
+        <div id="horariosContenido" aria-live="polite" class="transition-opacity">{% include "_horarios.html" %}</div>
         </div>
 
         <aside class="order-last xl:order-none w-full max-w-xs mx-auto mt-12 xl:mt-0 xl:max-w-none xl:sticky xl:top-28 {{ col_resenas }} xl:row-start-2" aria-label="Reseñas">
@@ -594,6 +585,51 @@
 </script>
 
 <script>
+/* Filtros de horarios: especialista -> servicios del especialista. Recarga solo la lista de días. */
+(function () {
+    const $ = id => document.getElementById(id);
+    const selEsp = $("fltEspecialista");
+    if (!selEsp) return;
+    const selSrv = $("fltServicio"), grupoSrv = $("fltServicioGrupo"), cont = $("horariosContenido");
+    const SERVICIOS = {{ servicios_por_especialista|tojson }};
+    const URL_HORARIOS = "{{ url_for('horarios_filtrados') }}";
+    let peticion = 0;
+
+    function llenarServicios() {
+        selSrv.length = 1;                       // deja solo "Todos los servicios"
+        selSrv.value = "";
+        const lista = SERVICIOS[selEsp.value] || [];
+        lista.forEach(s => selSrv.add(new Option(s.nombre, s.id)));
+        grupoSrv.hidden = !selEsp.value || lista.length === 0;
+    }
+
+    async function cargar() {
+        const n = ++peticion;
+        const qs = new URLSearchParams();
+        if (selEsp.value) qs.set("usuario", selEsp.value);
+        if (selEsp.value && selSrv.value) qs.set("producto", selSrv.value);
+        cont.style.opacity = ".5";
+        try {
+            const r = await fetch(URL_HORARIOS + "?" + qs.toString(), {headers: {"Accept": "application/json"}});
+            const data = await r.json();
+            if (n !== peticion) return;          // llegó una respuesta más nueva
+            cont.innerHTML = data.html;
+        } catch (e) {
+            if (n !== peticion) return;
+            cont.innerHTML = '<p class="max-w-2xl mx-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-900" role="status">No pudimos actualizar los horarios. Intenta de nuevo.</p>';
+        } finally {
+            if (n === peticion) cont.style.opacity = "";
+        }
+    }
+
+    selEsp.addEventListener("change", () => { llenarServicios(); cargar(); });
+    selSrv.addEventListener("change", cargar);
+    window.recargarHorarios = cargar;
+    llenarServicios();
+})();
+</script>
+
+<script>
 /* Reservar: si hay sesión se confirma y se reserva; si no, se pide el acceso y se continúa al volver. */
 (function () {
     const $ = id => document.getElementById(id);
@@ -628,12 +664,14 @@
         $("dlgReserva").showModal();
     }
 
-    document.querySelectorAll(".slot-horario").forEach(b => b.addEventListener("click", () => {
+    document.addEventListener("click", e => {
+        const b = e.target.closest(".slot-horario");
+        if (!b) return;
         const p = {id: b.dataset.idCita, texto: b.dataset.texto};
         if (LOGUEADO) { abrirReserva(p); return; }
         guardar(p);
         if (window.abrirAcceso) window.abrirAcceso();
-    }));
+    });
 
     if (!LOGUEADO) return;
 
@@ -643,7 +681,10 @@
 
     $("rsX").addEventListener("click", () => $("dlgReserva").close());
     $("rsNo").addEventListener("click", () => $("dlgReserva").close());
-    $("rsListo").addEventListener("click", () => location.reload());
+    $("rsListo").addEventListener("click", () => {
+        if (window.recargarHorarios) { $("dlgReserva").close(); window.recargarHorarios(); }
+        else location.reload();
+    });
 
     $("rsSi").addEventListener("click", async () => {
         $("rsSi").disabled = true;

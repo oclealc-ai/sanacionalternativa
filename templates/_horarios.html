@@ -1,0 +1,33 @@
+{% if error_horarios %}
+    <p class="max-w-2xl mx-auto rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-center text-sm text-amber-900" role="status">
+        En este momento no podemos consultar la agenda. Intenta más tarde o agenda directamente en CitaNet.
+    </p>
+{% elif horarios_por_dia %}
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 min-[1700px]:grid-cols-3">
+        {% for dia in horarios_por_dia %}
+            <article class="rounded-2xl border border-stone-200 bg-white/80 p-5 shadow-sm">
+                <h3 class="font-serif text-2xl text-stone-800">{{ dia.titulo }}</h3>
+                <p class="mt-1 text-xs capitalize text-stone-500">{{ dia.fecha_larga }}</p>
+                <div class="mt-5 flex flex-wrap gap-2">
+                    {% for horario in dia.horarios %}
+                        {% set con = (' con ' ~ horario.especialista) if horario.especialista else '' %}
+                        <button type="button" data-id-cita="{{ horario.idCita }}" data-texto="{{ dia.fecha_larga }} a las {{ horario.hora }}{{ con }}"
+                                title="Reservar el {{ dia.fecha_larga }} a las {{ horario.hora }}{{ con }}"
+                                class="slot-horario inline-flex min-h-10 items-center justify-center rounded-full border border-emerald-800/20 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 transition hover:border-emerald-800 hover:bg-emerald-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 cursor-pointer">{{ horario.hora }}{% if horario.especialista %}<span class="ml-1.5 text-xs font-medium opacity-70">· {{ horario.especialista }}</span>{% endif %}</button>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+    <p class="mt-6 text-center text-xs text-stone-500">
+        Elige un horario: si aún no has iniciado sesión te pediremos tu teléfono, y después solo confirmas tu reserva.
+    </p>
+{% elif filtro_activo %}
+    <p class="max-w-2xl mx-auto rounded-xl border border-stone-200 bg-white/70 px-5 py-4 text-center text-sm text-stone-600">
+        No hay horarios disponibles con esta selección en las próximas dos semanas. Prueba con otro especialista o servicio.
+    </p>
+{% else %}
+    <p class="max-w-2xl mx-auto rounded-xl border border-stone-200 bg-white/70 px-5 py-4 text-center text-sm text-stone-600">
+        No hay horarios disponibles en las próximas dos semanas. Puedes consultar de nuevo más tarde.
+    </p>
+{% endif %}
